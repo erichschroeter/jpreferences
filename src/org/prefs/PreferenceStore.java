@@ -86,7 +86,7 @@ public class PreferenceStore implements IPreferencePersistentStorage {
 	public PreferenceStore(File file, String description) {
 		this(file, description, null);
 	}
-	
+
 	/**
 	 * Creates an empty store that loads and saves to the file.
 	 * <p>
@@ -106,6 +106,10 @@ public class PreferenceStore implements IPreferencePersistentStorage {
 	/**
 	 * Creates an empty store that loads and saves to the file.
 	 * <p>
+	 * Calls <code>load()</code> and prints a message to standard error if an
+	 * error occurs in the process.
+	 * </p>
+	 * <p>
 	 * If the defaults value is <code>null</code> a new <code>Properties</code>
 	 * instance is created.
 	 * </p>
@@ -123,6 +127,12 @@ public class PreferenceStore implements IPreferencePersistentStorage {
 		properties = new Properties(defaultProperties);
 		setStoreFile(file);
 		setDescription(description);
+		try {
+			load();
+		} catch (IOException e) {
+			System.err.println("Failed to load preferences from <"
+					+ file.getAbsolutePath() + ">");
+		}
 	}
 
 	/**
