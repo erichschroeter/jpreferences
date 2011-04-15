@@ -17,7 +17,7 @@ import org.prefs.PreferenceManager;
 import org.prefs.PreferenceNode;
 import org.prefs.PreferenceStore;
 
-public class PreferenceMain {
+class PreferenceMain {
 	PreferenceManager mgr;
 	PreferenceNode general;
 	PreferenceStore store;
