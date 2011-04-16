@@ -26,21 +26,9 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
-public class PreferenceDialog extends JDialog implements
-		IPreferencePageContainer {
+public class PreferenceDialog extends JDialog {
 
 	private static final long serialVersionUID = 2693914066017357963L;
-
-	/**
-	 * The object handling the storage of the preferences.
-	 * 
-	 * <p>
-	 * The <code>PreferenceDialog</code> keeps it's own reference to a
-	 * <code>IPreferencePersistentStorage</code> in order to allow for the
-	 * dialog to be reused for multiple separate stores.
-	 * </p>
-	 */
-	private IPreferencePersistentStorage store;
 
 	/**
 	 * The object managing the <code>IPreferenceNode</code>'s which in turn
@@ -130,7 +118,6 @@ public class PreferenceDialog extends JDialog implements
 			ModalityType modality) {
 		super(parent, modality);
 		this.manager = manager;
-		this.store = manager.getStore();
 
 		tree = new JTree(manager.getRoot());
 		currentPage = this.manager.getRoot().getPage();
@@ -224,36 +211,11 @@ public class PreferenceDialog extends JDialog implements
 				Buttons.CANCEL, Buttons.DEFAULTS });
 		pagePanel.add(buttonPanel, BorderLayout.SOUTH);
 		JButton okButton = (JButton) buttonPanel.getComponent(0);
-		okButton.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentPage.performOk();
-				closeWindow();
-				try {
-					getPreferenceStore().save();
-				} catch (IOException error) {
-					
-				}
-			}
-		});
+		okButton.addActionListener(okActionListener());
 		JButton cancelButton = (JButton) buttonPanel.getComponent(1);
-		cancelButton.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentPage.performCancel();
-				closeWindow();
-			}
-		});
+		cancelButton.addActionListener(cancelActionListener());
 		JButton defaultButton = (JButton) buttonPanel.getComponent(2);
-		defaultButton.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentPage.performDefault();
-			}
-		});
+		defaultButton.addActionListener(defaultActionListener());
 		//
 		// PagePanel end
 		//
@@ -273,7 +235,13 @@ public class PreferenceDialog extends JDialog implements
 		add(new JScrollPane(pagePanel), c);
 		pack();
 	}
-	
+
+	/**
+	 * A convenience function for closing the dialog.
+	 * <p>
+	 * Calls <code>setVisible(false)</code>
+	 * </p>
+	 */
 	public void closeWindow() {
 		setVisible(false);
 	}
@@ -289,10 +257,17 @@ public class PreferenceDialog extends JDialog implements
 	 * </p>
 	 * 
 	 * @param page
+	 *            the new page to display
 	 */
 	private void changePageTo(IPreferencePage page) {
-		if (currentPage.okToLeave()) {
-			pagePanel.remove(currentPage);
+		if (currentPage != null) {
+			if (currentPage.okToLeave()) {
+				pagePanel.remove(currentPage);
+				currentPage = (PreferencePage) page;
+				pagePanel.add(currentPage);
+				pagePanel.updateUI();
+			}
+		} else {
 			currentPage = (PreferencePage) page;
 			pagePanel.add(currentPage);
 			pagePanel.updateUI();
@@ -337,7 +312,8 @@ public class PreferenceDialog extends JDialog implements
 		if (list.contains(Buttons.CANCEL)) {
 			JButton button = new JButton("Cancel");
 			button.setName(button.getText().toLowerCase());
-			button.setToolTipText("Ignore the intended changes made on this page");
+			button
+					.setToolTipText("Ignore the intended changes made on this page");
 			panel.add(button);
 		}
 		if (list.contains(Buttons.DEFAULTS)) {
@@ -350,41 +326,40 @@ public class PreferenceDialog extends JDialog implements
 		return panel;
 	}
 
-	//
-	// IPreferencePageContainer members
-	//
+	private ActionListener okActionListener() {
+		return new ActionListener() {
 
-	@Override
-	public IPreferencePersistentStorage getPreferenceStore() {
-		return store;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentPage.performOk();
+				closeWindow();
+				try {
+					manager.getStore().save();
+				} catch (IOException error) {
+
+				}
+			}
+		};
 	}
 
-	@Override
-	public void setPreferenceStore(IPreferencePersistentStorage store) {
-		this.store = store;
+	private ActionListener cancelActionListener() {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentPage.performCancel();
+				closeWindow();
+			}
+		};
 	}
 
-	@Override
-	public void updateButtons() {
-		// TODO Auto-generated method stub
+	private ActionListener defaultActionListener() {
+		return new ActionListener() {
 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentPage.performDefault();
+			}
+		};
 	}
-
-	@Override
-	public void updateMessage() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void updateTitle() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Window getWindow() {
-		return this;
-	}
-
 }

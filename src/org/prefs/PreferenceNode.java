@@ -48,22 +48,24 @@ public abstract class PreferenceNode implements IPreferenceNode {
 	 * <code>DefaultPreferencePage</code> is created.
 	 * </p>
 	 * 
+	 * @see {@link #setPage(PreferencePage)}
 	 * @param page
 	 *            The PreferencePage this node represents
+	 * @param parent
+	 *            the parent node
 	 * @param label
 	 *            The label representing this node
 	 * @param image
 	 *            The image representing this node
+	 * @throws NullPointerException
+	 *             if the <code>PreferencePage</code> is <code>null</code>
 	 */
-	public PreferenceNode(PreferenceNode parent, PreferencePage page,
+	public PreferenceNode(PreferencePage page, PreferenceNode parent,
 			String label, Image image) throws NullPointerException {
 		this.parent = parent;
 		children = new Vector<IPreferenceNode>();
 
-		if (page == null) {
-			throw new NullPointerException("PreferencePage must not be null");
-		}
-		this.page = page;
+		setPage(page);
 		this.label = label;
 		this.image = image;
 	}
@@ -109,8 +111,14 @@ public abstract class PreferenceNode implements IPreferenceNode {
 	 * 
 	 * @param page
 	 *            The page
+	 * @throws NullPointerException
+	 *             if the <code>PreferencePage</code> is <code>null</code>
 	 */
-	public void setPage(PreferencePage page) {
+	public void setPage(PreferencePage page) throws NullPointerException {
+		if (page == null) {
+			throw new NullPointerException("PreferencePage must not be null");
+		}
+
 		this.page = page;
 	}
 
@@ -159,7 +167,7 @@ public abstract class PreferenceNode implements IPreferenceNode {
 	// TreeNode members
 	//
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings("unchecked")
 	@Override
 	public Enumeration children() {
 		return children.elements();

@@ -20,6 +20,12 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 	protected String description;
 
 	/**
+	 * The <code>PreferenceManager</code> which manages the preferences for this
+	 * page displays.
+	 */
+	protected PreferenceManager manager;
+
+	/**
 	 * Creates a <code>PreferencePage</code> object specifying the <i>title</i>,
 	 * and <i>description</i>.
 	 * 
@@ -31,9 +37,32 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 	 *            <i>description</i> attribute is set to empty string (
 	 *            <code>""</code>)
 	 */
-	public PreferencePage(String title, String description) {
+	public PreferencePage(PreferenceManager manager, String title,
+			String description) {
+		setManager(manager);
 		setTitle(title);
 		setDescription(description);
+	}
+
+	/**
+	 * Returns the <code>PreferenceManager</code> this
+	 * <code>PreferencePage</code> is using.
+	 * 
+	 * @return the manager
+	 */
+	public PreferenceManager getManager() {
+		return manager;
+	}
+
+	/**
+	 * Sets the <code>PreferenceManager</code> which manages the preferences
+	 * this <code>PreferencePage</code> is displaying.
+	 * 
+	 * @param manager
+	 *            the manager to set
+	 */
+	public void setManager(PreferenceManager manager) {
+		this.manager = manager;
 	}
 
 	/**

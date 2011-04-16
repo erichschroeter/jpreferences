@@ -22,55 +22,59 @@ class PreferenceMain {
 	PreferenceNode general;
 	PreferenceStore store;
 	PreferenceDialog dlg;
-	
+
 	public PreferenceMain() {
 
-		store = new PreferenceStore(new File("prefs.properties"), "This file contains preference settings");
+		store = new PreferenceStore(new File("prefs.properties"),
+				"This file contains preference settings");
 		try {
 			store.load();
 		} catch (IOException e) {
 			// do nothing
 		}
-		
-		mgr = new PreferenceManager(store);
-		
-		DefaultPreferencePage backgroundPage = new DefaultPreferencePage("Background", "A description");
-		PreferenceNode background = new DefaultPreferenceNode(backgroundPage, "Background");
 
-		DefaultPreferencePage colorPage = new DefaultPreferencePage("Color", "A colorful description");
+		mgr = new PreferenceManager(store);
+
+		DefaultPreferencePage backgroundPage = new DefaultPreferencePage(mgr,
+				"Background", "A description");
+		PreferenceNode background = new DefaultPreferenceNode(backgroundPage,
+				"Background");
+
+		DefaultPreferencePage colorPage = new DefaultPreferencePage(mgr,
+				"Color", "A colorful description");
 		PreferenceNode color = new DefaultPreferenceNode(colorPage, "Color");
-		
+
 		general = new DefaultPreferenceNode(backgroundPage, "General");
 		PreferenceNode thread = new DefaultPreferenceNode(colorPage, "Threads");
-		
+
 		mgr.add(general);
 		mgr.addTo(general, background);
 		mgr.addTo(general, color);
 		mgr.add(thread);
-		
+
 		// Create UI
 
 		JFrame window = new JFrame();
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		window.setLocation(dim.width / 2, dim.height / 2);
-		
+
 		JButton button = new JButton("Settings");
-		
+
 		window.add(button);
 		window.pack();
 		window.setVisible(true);
 
 		button.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				showDialog();		
+				showDialog();
 			}
 		});
 
 		dlg = new PreferenceDialog(window, mgr);
-		
+
 	}
 
 	public void showDialog() {
@@ -83,5 +87,5 @@ class PreferenceMain {
 	public static void main(String[] args) {
 		new PreferenceMain();
 	}
-	
+
 }

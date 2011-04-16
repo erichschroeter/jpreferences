@@ -20,28 +20,52 @@ public class PreferenceManager {
 	private PreferenceStore store;
 
 	public PreferenceManager() {
-		this(new DefaultPreferenceNode(new DefaultPreferencePage()), new PreferenceStore("preferences.properties"));
+		this(null, null);
 	}
 
 	public PreferenceManager(PreferenceNode root) {
-		this(root, new PreferenceStore("preferences.properties"));
-	}
-	
-	public PreferenceManager(PreferenceStore store) {
-		this(new DefaultPreferenceNode(new DefaultPreferencePage()), store);
-	}
-	
-	public PreferenceManager(PreferenceNode root, PreferenceStore store) {
-		default_root = root;
-		this.setStore(store);
+		this(root, null);
 	}
 
+	public PreferenceManager(PreferenceStore store) {
+		this(null, store);
+	}
+
+	public PreferenceManager(PreferenceNode root, PreferenceStore store) {
+		setRoot(root);
+		setStore(store);
+	}
+
+	/**
+	 * Sets the store for which this <code>PreferenceManager</code> manages.
+	 * <p>
+	 * If <i>store</i> is <code>null</code> a new <code>PreferenceStore</code>
+	 * is created. The location is set to <i>preferences.properties</i>.
+	 * </p>
+	 * 
+	 * @param store the preference store
+	 */
 	public void setStore(PreferenceStore store) {
-		this.store = store;
+		this.store = store != null ? store : new PreferenceStore(
+				"preferences.properties");
 	}
 
 	public PreferenceStore getStore() {
 		return store;
+	}
+
+	/**
+	 * Sets the default root node of all nodes to be managed.
+	 * <p>
+	 * If <i>root</i> is <code>null</code>, the <i>default_root</code> attribute
+	 * is set to a new <code>DefaultPreferenceNode</code>
+	 * </p>
+	 * 
+	 * @param root
+	 *            the master root node
+	 */
+	private void setRoot(PreferenceNode root) {
+		default_root = root != null ? root : new DefaultPreferenceNode();
 	}
 
 	/**

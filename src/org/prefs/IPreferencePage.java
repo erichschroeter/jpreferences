@@ -2,7 +2,9 @@ package org.prefs;
 
 public interface IPreferencePage {
 
-	public void initialize(IPreferenceStore store);
+	public void setManager(PreferenceManager manager);
+	
+	public PreferenceManager getManager();
 	
 	/**
 	 * Checks whether it is alright to leave this page.
@@ -36,23 +38,7 @@ public interface IPreferencePage {
 	 *         the Default to happen
 	 */
 	public boolean performDefault();
-
-	/**
-	 * Sets or clears the container of this page.
-	 * 
-	 * @param container
-	 *            the preference page container, or null
-	 */
-	public void setPageContainer(IPreferencePageContainer container) throws NullPointerException;
-
-	/**
-	 * Returns the <code>IPreferencePage</code>'s
-	 * <code>IPreferencePageContainer</code>.
-	 * 
-	 * @return the preference page's container
-	 */
-	public IPreferencePageContainer getPageContainer();
-
+	
 	/**
 	 * Sets the preference page's title.
 	 * 
@@ -83,11 +69,4 @@ public interface IPreferencePage {
 	 */
 	public String getDescription();
 
-	/**
-	 * Returns the name of the class which implements IPreferencePage. This is
-	 * used for creating instances via the Class.newInstance() function.
-	 * 
-	 * @return The class name
-	 */
-	public String getClassName();
 }

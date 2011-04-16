@@ -4,6 +4,10 @@ import java.awt.Image;
 
 public class DefaultPreferenceNode extends PreferenceNode {
 
+	public DefaultPreferenceNode() {
+		this(null);
+	}
+	
 	public DefaultPreferenceNode(PreferencePage page) {
 		this(page, null, null);
 	}
@@ -21,6 +25,6 @@ public class DefaultPreferenceNode extends PreferenceNode {
 	}
 
 	public DefaultPreferenceNode(PreferencePage page, PreferenceNode parent, String label, Image image) {
-		super(parent, page, label, image);
+		super(page != null ? page : new DefaultPreferencePage(), parent, label, image);
 	}
 }
