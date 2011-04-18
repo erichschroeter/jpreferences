@@ -1,12 +1,12 @@
 package org.prefs;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -75,8 +75,32 @@ public class PreferenceDialog extends JDialog {
 	protected Buttons[] buttons;
 
 	/**
+	 * Creates a <code>PreferenceDialog</code> with the specified
+	 * <code>PreferenceManager</code>.
+	 * <p>
+	 * Calls <code>super((Dialog) null, true)</code> and sets the location
+	 * relative to the result of <code>getParent()</code>
+	 * </p>
+	 * 
+	 * @param manager
+	 *            the <code>PreferenceManager</code> that managing the
+	 *            preferences
+	 */
+	public PreferenceDialog(PreferenceManager manager) {
+		super((Dialog) null, true);
+		this.manager = manager;
+
+		tree = new JTree(manager.getRoot());
+		currentPage = this.manager.getRoot().getPage();
+
+		init();
+
+		setLocationRelativeTo(getParent());
+	}
+
+	/**
 	 * Calls
-	 * <code>PreferenceDialog(Window, PreferenceManager, ModalityType)</code>
+	 * <code>{@link #PreferenceDialog(Window, PreferenceManager, ModalityType)}</code>
 	 * passing the <i>parent</i> and <i>manager</i> arguments and
 	 * <code>ModalityType.APPLICATION_MODAL</code>.
 	 * 
@@ -124,10 +148,7 @@ public class PreferenceDialog extends JDialog {
 
 		init();
 
-		// position the dialog box relative to the parent
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		setLocation(screen.width / 2 - getWidth() / 2, screen.height / 2
-				- getHeight() / 2);
+		setLocationRelativeTo(getParent());
 	}
 
 	/**
@@ -138,70 +159,29 @@ public class PreferenceDialog extends JDialog {
 	 * to the <code>IPreferenceNode</code>.
 	 */
 	private void init() {
+		setLayout(new GridBagLayout());
 		setTitle("Preferences Dialog");
 		setMinimumSize(new Dimension(400, 400));
 		// add a window listener to save the preferences when the dialog closes
-		addWindowListener(new WindowListener() {
-
-			@Override
-			public void windowOpened(WindowEvent e) {
-			}
-
-			@Override
-			public void windowIconified(WindowEvent e) {
-			}
-
-			@Override
-			public void windowDeiconified(WindowEvent e) {
-			}
-
-			@Override
-			public void windowDeactivated(WindowEvent e) {
-			}
-
-			@Override
-			public void windowClosing(WindowEvent e) {
-				currentPage.performCancel();
-			}
-
-			@Override
-			public void windowClosed(WindowEvent e) {
-			}
-
-			@Override
-			public void windowActivated(WindowEvent e) {
-			}
-		});
+		addWindowListener(dialogWindowListener());
 
 		GridBagConstraints c;
+
+		//
+		// TreePanel -- panel containing the tree hierarchy
+		//
 		c = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
 				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
 				new Insets(2, 2, 2, 2), 0, 0);
-
-		//
-		// TreePanel -- panel containing the tree heirarchy
-		//
 		JPanel treePanel = new JPanel(new GridBagLayout());
 		treePanel.add(tree, c);
 
 		tree.setRootVisible(false);
 		tree.setBorder(BorderFactory.createLoweredBevelBorder());
-		tree.addTreeSelectionListener(new TreeSelectionListener() {
-
-			@Override
-			public void valueChanged(TreeSelectionEvent e) {
-				PreferenceNode node = (PreferenceNode) e.getPath()
-						.getLastPathComponent();
-				PreferencePage page = node.getPage();
-				changePageTo(page);
-			}
-		});
-		//
-		// TreePanel end
-		//
+		tree.addTreeSelectionListener(pageTreeSelectionListener());
 
 		//
-		// PagePanel -- container for all the PreferencePage's
+		// PagePanel
 		//
 		pagePanel = new JPanel(new BorderLayout());
 		pagePanel.add(currentPage, BorderLayout.CENTER);
@@ -216,16 +196,11 @@ public class PreferenceDialog extends JDialog {
 		cancelButton.addActionListener(cancelActionListener());
 		JButton defaultButton = (JButton) buttonPanel.getComponent(2);
 		defaultButton.addActionListener(defaultActionListener());
-		//
-		// PagePanel end
-		//
 
 		//
 		// add both of the main panels to this JDialog
 		//
-		setLayout(new GridBagLayout());
-
-		c = new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+		c = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
 				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
 				new Insets(2, 2, 2, 2), 0, 0);
 		add(treePanel, c);
@@ -233,6 +208,7 @@ public class PreferenceDialog extends JDialog {
 				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
 				new Insets(2, 2, 2, 2), 0, 0);
 		add(new JScrollPane(pagePanel), c);
+
 		pack();
 	}
 
@@ -324,6 +300,64 @@ public class PreferenceDialog extends JDialog {
 		}
 
 		return panel;
+	}
+
+	/**
+	 * @return an <code>TreeSelectionListener</code> which handles casting the
+	 *         selected path's <code>Component</code> to a
+	 *         <code>PreferencePage</code> and passing it to
+	 *         <code>{@link PreferenceDialog#changePageTo(IPreferencePage)</code>
+	 */
+	private TreeSelectionListener pageTreeSelectionListener() {
+		return new TreeSelectionListener() {
+
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				PreferenceNode node = (PreferenceNode) e.getPath()
+						.getLastPathComponent();
+				PreferencePage page = node.getPage();
+				changePageTo(page);
+			}
+		};
+	}
+
+	/**
+	 * @return an <code>WindowListener</code> which handles calling the current
+	 *         page's <code>performCancel()</code> function when the window is
+	 *         closing.
+	 */
+	private WindowListener dialogWindowListener() {
+		return new WindowListener() {
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+			}
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				currentPage.performCancel();
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+			}
+		};
 	}
 
 	private ActionListener okActionListener() {
