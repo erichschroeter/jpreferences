@@ -235,18 +235,12 @@ public class PreferenceDialog extends JDialog {
 	 * @param page
 	 *            the new page to display
 	 */
-	private void changePageTo(IPreferencePage page) {
-		if (currentPage != null) {
-			if (currentPage.okToLeave()) {
-				pagePanel.remove(currentPage);
-				currentPage = (PreferencePage) page;
-				pagePanel.add(currentPage);
-				pagePanel.updateUI();
-			}
-		} else {
-			currentPage = (PreferencePage) page;
+	private void changePageTo(PreferencePage page) {
+		if (currentPage.okToLeave()) {
+			pagePanel.remove(currentPage);
+			currentPage = page;
 			pagePanel.add(currentPage);
-			pagePanel.updateUI();
+			pack();
 		}
 	}
 
