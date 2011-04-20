@@ -1,6 +1,5 @@
 package org.prefs;
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -19,11 +18,13 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 public class PreferenceDialog extends JDialog {
@@ -54,6 +55,10 @@ public class PreferenceDialog extends JDialog {
 	 * <code>PreferencePage</code>.
 	 */
 	private JPanel pagePanel;
+
+	private static final GridBagConstraints pagePanelConstraints = new GridBagConstraints(
+			0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST,
+			GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0);
 
 	/**
 	 * Buttons available on the <code>PreferencePage</code>.
@@ -170,26 +175,34 @@ public class PreferenceDialog extends JDialog {
 		//
 		// TreePanel -- panel containing the tree hierarchy
 		//
+		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+		renderer.setOpenIcon(null);
+		renderer.setLeafIcon(null);
+		renderer.setClosedIcon(null);
+
+		tree.setCellRenderer(renderer);
+		tree.setBorder(BorderFactory.createLoweredBevelBorder());
+		tree.addTreeSelectionListener(pageTreeSelectionListener());
+
 		c = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
 				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
 				new Insets(2, 2, 2, 2), 0, 0);
 		JPanel treePanel = new JPanel(new GridBagLayout());
 		treePanel.add(tree, c);
 
-		tree.setRootVisible(false);
-		tree.setBorder(BorderFactory.createLoweredBevelBorder());
-		tree.addTreeSelectionListener(pageTreeSelectionListener());
-
 		//
 		// PagePanel
 		//
-		pagePanel = new JPanel(new BorderLayout());
-		pagePanel.add(currentPage, BorderLayout.CENTER);
+		pagePanel = new JPanel(new GridBagLayout());
+		pagePanel.add(currentPage, pagePanelConstraints);
 
 		// Buttons (i.e. OK, Cancel, Defaults)
 		JPanel buttonPanel = generateButtons(new Buttons[] { Buttons.OK,
 				Buttons.CANCEL, Buttons.DEFAULTS });
-		pagePanel.add(buttonPanel, BorderLayout.SOUTH);
+		c = new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0,
+				GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+				new Insets(2, 2, 2, 2), 0, 0);
+		pagePanel.add(buttonPanel, c);
 		JButton okButton = (JButton) buttonPanel.getComponent(0);
 		okButton.addActionListener(okActionListener());
 		JButton cancelButton = (JButton) buttonPanel.getComponent(1);
@@ -213,16 +226,6 @@ public class PreferenceDialog extends JDialog {
 	}
 
 	/**
-	 * A convenience function for closing the dialog.
-	 * <p>
-	 * Calls <code>setVisible(false)</code>
-	 * </p>
-	 */
-	public void closeWindow() {
-		setVisible(false);
-	}
-
-	/**
 	 * Handles displaying the given page.
 	 * 
 	 * <p>
@@ -237,11 +240,21 @@ public class PreferenceDialog extends JDialog {
 	 */
 	private void changePageTo(PreferencePage page) {
 		if (currentPage.okToLeave()) {
+			currentPage.setVisible(false);
 			pagePanel.remove(currentPage);
 			currentPage = page;
-			pagePanel.add(currentPage);
+			currentPage.setVisible(true);
+			pagePanel.add(currentPage, pagePanelConstraints);
 			pack();
+		} else {
+			JOptionPane
+					.showConfirmDialog(getParent(),
+							"Preferences have not been saved. Leave page without saving?");
 		}
+	}
+	
+	public void openPage(String path) {
+//		manager.getRoot().getIdentifier()
 	}
 
 	/**
@@ -282,8 +295,7 @@ public class PreferenceDialog extends JDialog {
 		if (list.contains(Buttons.CANCEL)) {
 			JButton button = new JButton("Cancel");
 			button.setName(button.getText().toLowerCase());
-			button
-					.setToolTipText("Ignore the intended changes made on this page");
+			button.setToolTipText("Ignore the intended changes made on this page");
 			panel.add(button);
 		}
 		if (list.contains(Buttons.DEFAULTS)) {
@@ -309,8 +321,7 @@ public class PreferenceDialog extends JDialog {
 			public void valueChanged(TreeSelectionEvent e) {
 				PreferenceNode node = (PreferenceNode) e.getPath()
 						.getLastPathComponent();
-				PreferencePage page = node.getPage();
-				changePageTo(page);
+				changePageTo(node.getPage());
 			}
 		};
 	}
@@ -360,7 +371,8 @@ public class PreferenceDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				currentPage.performOk();
-				closeWindow();
+				setVisible(false);
+				dispose();
 				try {
 					manager.getStore().save();
 				} catch (IOException error) {
@@ -376,7 +388,8 @@ public class PreferenceDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				currentPage.performCancel();
-				closeWindow();
+				setVisible(false);
+				dispose();
 			}
 		};
 	}

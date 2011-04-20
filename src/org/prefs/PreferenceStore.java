@@ -127,12 +127,6 @@ public class PreferenceStore implements IPreferencePersistentStorage {
 		properties = new Properties(defaultProperties);
 		setStoreFile(file);
 		setDescription(description);
-		try {
-			load();
-		} catch (IOException e) {
-			System.err.println("Failed to load preferences from <"
-					+ file.getAbsolutePath() + ">");
-		}
 	}
 
 	/**

@@ -1,15 +1,11 @@
 package org.prefs.example;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-
+import org.prefs.ConflictingIdentifierException;
 import org.prefs.DefaultPreferenceNode;
 import org.prefs.DefaultPreferencePage;
 import org.prefs.PreferenceDialog;
@@ -18,8 +14,6 @@ import org.prefs.PreferenceNode;
 import org.prefs.PreferenceStore;
 
 class PreferenceMain {
-	PreferenceManager mgr;
-	PreferenceNode general;
 	PreferenceStore store;
 	PreferenceDialog dlg;
 
@@ -33,51 +27,27 @@ class PreferenceMain {
 			// do nothing
 		}
 
-		mgr = new PreferenceManager(store);
+		PreferenceManager mgr = new PreferenceManager(store);
 
-		DefaultPreferencePage backgroundPage = new DefaultPreferencePage(mgr,
-				"Background", "A description");
-		PreferenceNode background = new DefaultPreferenceNode(backgroundPage,
-				"Background");
+		DefaultPreferencePage defaultPage = new DefaultPreferencePage(mgr,
+				"DefaultPage", "A default preference page");
+		ExampleTextFieldPreferencePage textFieldPage = new ExampleTextFieldPreferencePage(
+				mgr, "Text Fields", "Show a page populated with text fields");
 
-		DefaultPreferencePage colorPage = new DefaultPreferencePage(mgr,
-				"Color", "A colorful description");
-		PreferenceNode color = new DefaultPreferenceNode(colorPage, "Color");
+		try {
+			PreferenceNode parent = new DefaultPreferenceNode("Parent");
+			mgr.add(new DefaultPreferenceNode(defaultPage, "Default Page"));
+			mgr.add(parent);
+			mgr.addTo(parent, new DefaultPreferenceNode("Child"));
+			mgr.add(new DefaultPreferenceNode(textFieldPage, "Text Fields"));
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		} catch (ConflictingIdentifierException e) {
+			e.printStackTrace();
+		}
 
-		general = new DefaultPreferenceNode(backgroundPage, "General");
-		PreferenceNode thread = new DefaultPreferenceNode(colorPage, "Threads");
-
-		mgr.add(general);
-		mgr.addTo(general, background);
-		mgr.addTo(general, color);
-		mgr.add(thread);
-
-		// Create UI
-
-		JFrame window = new JFrame();
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		window.setLocation(dim.width / 2, dim.height / 2);
-
-		JButton button = new JButton("Settings");
-
-		window.add(button);
-		window.pack();
-		window.setVisible(true);
-
-		button.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				showDialog();
-			}
-		});
-
-		dlg = new PreferenceDialog(window, mgr);
-
-	}
-
-	public void showDialog() {
+		dlg = new PreferenceDialog(mgr);
+		dlg.addWindowListener(dialogWindowListener());
 		dlg.setVisible(true);
 	}
 
@@ -88,4 +58,43 @@ class PreferenceMain {
 		new PreferenceMain();
 	}
 
+	private WindowListener dialogWindowListener() {
+		return new WindowListener() {
+
+			@Override
+			public void windowOpened(WindowEvent arg0) {
+
+			}
+
+			@Override
+			public void windowIconified(WindowEvent arg0) {
+
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent arg0) {
+
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent arg0) {
+
+			}
+
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				System.exit(0);
+			}
+
+			@Override
+			public void windowClosed(WindowEvent arg0) {
+
+			}
+
+			@Override
+			public void windowActivated(WindowEvent arg0) {
+
+			}
+		};
+	}
 }

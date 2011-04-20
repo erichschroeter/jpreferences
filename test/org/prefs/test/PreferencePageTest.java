@@ -1,9 +1,10 @@
 package org.prefs.test;
 
-import java.awt.Image;
+import javax.swing.Icon;
 
 import junit.framework.TestCase;
 
+import org.prefs.ConflictingIdentifierException;
 import org.prefs.DefaultPreferenceNode;
 import org.prefs.DefaultPreferencePage;
 import org.prefs.PreferenceManager;
@@ -41,25 +42,33 @@ public class PreferencePageTest extends TestCase {
 	public void testNullDefaultNodeImpls() {
 		PreferencePage page = new DefaultPreferencePage();
 
-		PreferenceNode node;
-		node = new DefaultPreferenceNode();
-		node = new DefaultPreferenceNode((PreferencePage) null);
-		node = new DefaultPreferenceNode((PreferencePage) null,
-				(PreferenceNode) null);
-		node = new DefaultPreferenceNode((PreferencePage) null, (String) null);
-		node = new DefaultPreferenceNode((PreferencePage) null, (String) null,
-				(Image) null);
-		node = new DefaultPreferenceNode((PreferencePage) null,
-				(PreferenceNode) null, (String) null, (Image) null);
+		PreferenceNode node = null;
+		try {
+			node = new DefaultPreferenceNode();
+			node = new DefaultPreferenceNode((PreferencePage) null);
+			node = new DefaultPreferenceNode((PreferencePage) null,
+					(PreferenceNode) null);
+			node = new DefaultPreferenceNode((PreferencePage) null,
+					(String) null);
+			node = new DefaultPreferenceNode((PreferencePage) null,
+					(String) null, (Icon) null);
+			node = new DefaultPreferenceNode((PreferencePage) null,
+					(String) null, (PreferenceNode) null, (String) null,
+					(Icon) null);
 
-		node = new DefaultPreferenceNode(page);
-		node = new DefaultPreferenceNode(page, new DefaultPreferenceNode());
-		node = new DefaultPreferenceNode(page, "");
-		node = new DefaultPreferenceNode(page, "", (Image) null);
-		node = new DefaultPreferenceNode(page, new DefaultPreferenceNode(), "",
-				(Image) null);
+			node = new DefaultPreferenceNode(page);
+			node = new DefaultPreferenceNode(page, new DefaultPreferenceNode());
+			node = new DefaultPreferenceNode(page, "");
+			node = new DefaultPreferenceNode(page, "", (Icon) null);
+			node = new DefaultPreferenceNode(page, "",
+					new DefaultPreferenceNode(), "", (Icon) null);
 
-		node.getLabelText();
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		} catch (ConflictingIdentifierException e) {
+			e.printStackTrace();
+		}
+		node.getLabel();
 	}
 
 	/**
@@ -91,7 +100,7 @@ public class PreferencePageTest extends TestCase {
 				(String) null, (String) null);
 		page = new DefaultPreferencePage(manager);
 		page = new DefaultPreferencePage(manager, "", "");
-		
+
 		page.getTitle();
 	}
 

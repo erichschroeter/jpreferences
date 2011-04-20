@@ -65,7 +65,13 @@ public class PreferenceManager {
 	 *            the master root node
 	 */
 	private void setRoot(PreferenceNode root) {
-		default_root = root != null ? root : new DefaultPreferenceNode();
+		try {
+			default_root = root != null ? root : new DefaultPreferenceNode();
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		} catch (ConflictingIdentifierException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -105,9 +111,9 @@ public class PreferenceManager {
 	 */
 	public void addTo(IPreferenceNode parent, IPreferenceNode child) {
 		if (parent != null) {
-			parent.add(child);
+			parent.addChild(child);
 		} else {
-			default_root.add(child);
+			default_root.addChild(child);
 		}
 	}
 
