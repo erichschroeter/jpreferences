@@ -1,4 +1,4 @@
-package org.prefs;
+package org.jpreferences;
 
 import java.sql.Timestamp;
 import java.util.Date;

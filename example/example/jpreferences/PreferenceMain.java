@@ -1,17 +1,17 @@
-package org.prefs.example;
+package example.jpreferences;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 
-import org.prefs.ConflictingIdentifierException;
-import org.prefs.DefaultPreferenceNode;
-import org.prefs.DefaultPreferencePage;
-import org.prefs.PreferenceDialog;
-import org.prefs.PreferenceManager;
-import org.prefs.PreferenceNode;
-import org.prefs.PreferenceStore;
+import org.jpreferences.ConflictingIdentifierException;
+import org.jpreferences.DefaultPreferenceNode;
+import org.jpreferences.DefaultPreferencePage;
+import org.jpreferences.PreferenceDialog;
+import org.jpreferences.PreferenceManager;
+import org.jpreferences.PreferenceNode;
+import org.jpreferences.PreferenceStore;
 
 class PreferenceMain {
 	PreferenceStore store;

@@ -1,10 +1,10 @@
-package org.prefs.test;
+package test.jpreferences;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.prefs.PreferenceStore;
+import org.jpreferences.PreferenceStore;
 
 
 public class PreferenceStoreTest extends AbstractFileSystemTestCase {

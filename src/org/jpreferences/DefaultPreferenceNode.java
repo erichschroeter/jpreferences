@@ -1,4 +1,4 @@
-package org.prefs;
+package org.jpreferences;
 
 import javax.swing.Icon;
 

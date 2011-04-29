@@ -1,4 +1,4 @@
-package org.prefs;
+package org.jpreferences;
 
 import java.io.File;
 import java.io.IOException;

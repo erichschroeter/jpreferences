@@ -1,15 +1,15 @@
-package org.prefs.test;
+package test.jpreferences;
 
 import javax.swing.Icon;
 
 import junit.framework.TestCase;
 
-import org.prefs.ConflictingIdentifierException;
-import org.prefs.DefaultPreferenceNode;
-import org.prefs.DefaultPreferencePage;
-import org.prefs.PreferenceManager;
-import org.prefs.PreferenceNode;
-import org.prefs.PreferencePage;
+import org.jpreferences.ConflictingIdentifierException;
+import org.jpreferences.DefaultPreferenceNode;
+import org.jpreferences.DefaultPreferencePage;
+import org.jpreferences.PreferenceManager;
+import org.jpreferences.PreferenceNode;
+import org.jpreferences.PreferencePage;
 
 public class PreferencePageTest extends TestCase {
 
@@ -25,7 +25,7 @@ public class PreferencePageTest extends TestCase {
 	 * <li>{@link DefaultPreferenceNode#DefaultPreferenceNode()}</li>
 	 * <li>{@link DefaultPreferenceNode#DefaultPreferenceNode(PreferencePage)}</li>
 	 * <li>
-	 * {@link DefaultPreferenceNode#DefaultPreferenceNode(PreferencePage, org.prefs.PreferenceNode)}
+	 * {@link DefaultPreferenceNode#DefaultPreferenceNode(PreferencePage, org.jpreferences.PreferenceNode)}
 	 * </li>
 	 * <li>
 	 * {@link DefaultPreferenceNode#DefaultPreferenceNode(PreferencePage, String)}
@@ -34,7 +34,7 @@ public class PreferencePageTest extends TestCase {
 	 * {@link DefaultPreferenceNode#DefaultPreferenceNode(PreferencePage, String, java.awt.Image)}
 	 * </li>
 	 * <li>
-	 * {@link DefaultPreferenceNode#DefaultPreferenceNode(PreferencePage, org.prefs.PreferenceNode, String, java.awt.Image)}
+	 * {@link DefaultPreferenceNode#DefaultPreferenceNode(PreferencePage, org.jpreferences.PreferenceNode, String, java.awt.Image)}
 	 * </li>
 	 * </ul>
 	 * </p>

@@ -1,4 +1,4 @@
-package org.prefs.example;
+package example.jpreferences;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,8 +10,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.prefs.PreferenceManager;
-import org.prefs.PreferencePage;
+import org.jpreferences.PreferenceManager;
+import org.jpreferences.PreferencePage;
 
 public class ExampleTextFieldPreferencePage extends PreferencePage {
 

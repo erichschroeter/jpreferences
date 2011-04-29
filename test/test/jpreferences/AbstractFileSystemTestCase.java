@@ -1,4 +1,4 @@
-package org.prefs.test;
+package test.jpreferences;
 
 import junit.framework.TestCase;
 

@@ -1,4 +1,4 @@
-package org.prefs;
+package org.jpreferences;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
