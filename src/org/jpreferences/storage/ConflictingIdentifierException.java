@@ -1,14 +1,29 @@
-package org.jpreferences;
+package org.jpreferences.storage;
 
+/**
+ * Should be thrown when an identifier conflicts with another in a storage object.
+ * @author Erich Schroeter
+ * @version 1.0
+ * @created 02-May-2011 6:21:05 PM
+ */
 public class ConflictingIdentifierException extends Exception {
 
-	private static final long serialVersionUID = -6756684810786923572L;
 
-	public ConflictingIdentifierException() {
-		this(null);
+
+	public void finalize() throws Throwable {
+		super.finalize();
 	}
-	
-	public ConflictingIdentifierException(String message) {
-		super(message);
+
+	public ConflictingIdentifierException(){
+
 	}
+
+	/**
+	 * 
+	 * @param message
+	 */
+	public ConflictingIdentifierException(String message){
+
+	}
+
 }

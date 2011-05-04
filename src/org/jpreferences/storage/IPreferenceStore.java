@@ -1,149 +1,114 @@
-package org.jpreferences;
+package org.jpreferences.storage;
 
-public interface IPreferenceStore {
-
-	/**
-	 * The default value for boolean preferences (<code>false</code>).
-	 */
-	public static final boolean DEFAULT_BOOLEAN = false;
-
-	/**
-	 * The default value for double preferences (<code>0.0</code>).
-	 */
-	public static final double DEFAULT_DOUBLE = 0.0;
-
-	/**
-	 * The default value for float preferences (<code>0.0f</code>).
-	 */
-	public static final float DEFAULT_FLOAT = 0.0f;
+/**
+ * A preference store provides storage for preferences.
+ * 
+ * The method for storing the objects in a preference store is left up to the
+ * implementor. Some examples for different methods of storing objects are XML,
+ * Java properties, or JSON.
+ * @author Erich Schroeter
+ * @version 1.0
+ * @created 02-May-2011 6:21:06 PM
+ */
+public interface IPreferenceStore extends ICRUD<String>, IStoreSupport<String>, IStore<String> {
 
 	/**
-	 * The default value for int preferences (<code>0</code>).
-	 */
-	public static final int DEFAULT_INT = 0;
-
-	/**
-	 * The default value for long preferences (<code>0L</code>).
-	 */
-	public static final long DEFAULT_LONG = 0L;
-
-	/**
-	 * The default value for String preferences (<code>""</code>).
-	 */
-	public static final String DEFAULT_STRING = "";
-
-	/**
-	 * The string representation used for <code>true</code> (<code>"true"</code>
-	 * ).
-	 */
-	public static final String TRUE = "true";
-
-	/**
-	 * The string representation used for <code>false</code> (
-	 * <code>"false"</code>).
-	 */
-	public static final String FALSE = "false";
-
-	/**
-	 * Returns whether the named preference is known to this preference store.
+	 * Returns whether the named preference is stored in this preference store.
 	 * 
-	 * @param name
-	 *            the name of the preference
-	 * @return <code>true</code> if either a current value or a default value is
-	 *         known for the named preference, and <code>false</code> otherwise
+	 * @return <code>True</code> if it exists, else <code>False</code>
+	 * 
+	 * @param name    the name of the preference
 	 */
 	public boolean contains(String name);
 
 	/**
-	 * Returns whether the current value of the preference with the given name
-	 * has the default value.
+	 * Returns whether the preference associated with the given identifier is the
+	 * default value or not.
 	 * 
-	 * @param name
-	 *            the name of the preference
-	 * @return <code>true</code> if the preference has a known default value and
-	 *         its current value is the same, and <code>false</code> otherwise
-	 *         (including the case where the preference is unknown to this
-	 *         store)
+	 * @return <code>True</code> if the preference is the same as the default, else
+	 * <code>False</code>
+	 * 
+	 * @param name    the name of the preference
 	 */
 	public boolean isDefault(String name);
 
 	/**
-	 * Returns whether the current values in this property store require saving.
+	 * Returns the default value for the preference associated with the specified
+	 * identifier.
 	 * 
-	 * @return <code>true</code> if at least one of values of the preferences
-	 *         known to this store has changed and requires saving, and
-	 *         <code>false</code> otherwise.
+	 * @return the default value
+	 * 
+	 * @param id    the identifier
 	 */
-	public boolean needsSaving();
+	public String getDefault(String id);
 
 	/**
-	 * Sets the default value for the T-valued preference with the given name.
-	 * <p>
-	 * Note that the current value of the preference is affected if the
-	 * preference's current value was its old default value, in which case it
-	 * changes to the new default value. If the preference's current is
-	 * different from its old default value, its current value is unaffected. No
-	 * property change events are reported by changing default values.
-	 * </p>
+	 * Sets the default value for the preference associated with the given identifier.
 	 * 
-	 * @param name
-	 *            the name of the preference
-	 * @param value
-	 *            the new default value for the preference
+	 * 
+	 * When {@link #reset(String)} is called, this is the value the preference will be
+	 * set to.
+	 * 
+	 * @param id    the identifier
+	 * @param preference    the new default value for the preference
 	 */
-	public <T> void setDefault(String name, T value);
+	public void setDefault(String id, String preference);
 
 	/**
-	 * Sets the current value of the preference with the given name back to its
-	 * default value.
-	 * <p>
-	 * Note that the preferred way of re-initializing a preference to the
-	 * appropriate default value is to call <code>setToDefault</code>. This is
-	 * implemented by removing the named value from the store, thereby exposing
-	 * the default value.
-	 * </p>
+	 * Sets the preference associated with the given identifier back to its default
+	 * value.
 	 * 
-	 * @param name
-	 *            the name of the preference
+	 * @see #setDefault(String, String)
+	 * 
+	 * @param id    the identifier
 	 */
-	public void setToDefault(String name);
+	public void reset(String id);
 
 	/**
-	 * Returns the default value for the given property.
+	 * Creates the preference in the store with the associated identifier.
 	 * 
-	 * @param name
-	 *            The name of the property
-	 * @return The default value of the property
+	 * A property change event is reported if the current value of the preference
+	 * actually changes from its previous value. In the event object, the property
+	 * name is the name of the preference.
+	 * 
+	 * Note that the preferred way of re-initializing a preference to its default
+	 * value is to call {@link #reset(String, String)}.
+	 * 
+	 * @return <code>True</code> if successful, else <code>False</code>
+	 * 
+	 * @param id    the identifier
+	 * @param preference    the preference to set
 	 */
-	public String getDefault(String name);
+	public boolean createPreference(String id, String preference);
 
 	/**
-	 * Sets the current value of the T-valued preference with the given name.
-	 * <p>
-	 * A property change event is reported if the current value of the
-	 * preference actually changes from its previous value. In the event object,
-	 * the property name is the name of the preference, and the old and new
-	 * values are wrapped as objects.
-	 * </p>
-	 * <p>
-	 * Note that the preferred way of re-initializing a preference to its
-	 * default value is to call <code>setToDefault</code>.
-	 * </p>
+	 * Reads and returns the preference associated with the given identifier in the
+	 * store.
 	 * 
-	 * @param name
-	 *            the name of the preference
-	 * @param value
-	 *            the new current value of the preference
+	 * @return the preference
+	 * 
+	 * @param id    the identifier
 	 */
-	public <T> void setValue(String name, T value);
+	public String readPreference(String id);
 
 	/**
-	 * Returns the value of the specified property.
+	 * Updates the preference associated with the specified identifier to the given
+	 * preference.
 	 * 
-	 * @param name
-	 *            The name of the property
-	 * @return The stored value of the property
+	 * @return <code>True</code> if successful, else <code>False</code>
+	 * 
+	 * @param id    the identifier
+	 * @param preference    the preference
 	 */
-	public String getValue(String name);
-	
+	public boolean updatePreference(String id, String preference);
+
+	/**
+	 * Deletes the preference associated with the specified identifier.
+	 * 
+	 * @return <code>True</code> if successful, else <code>False</code>
+	 * 
+	 * @param id    the identifier
+	 */
+	public boolean deletePreference(String id);
+
 }

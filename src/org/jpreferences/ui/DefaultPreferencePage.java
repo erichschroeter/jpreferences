@@ -1,108 +1,160 @@
-package org.jpreferences;
+package org.jpreferences.ui;
+import javax.swing.JPanel;
 
-public class DefaultPreferencePage extends PreferencePage {
+import org.jpreferences.IPreferenceManager;
+import org.jpreferences.PreferenceManager;
 
-	private static final long serialVersionUID = 4271734721354591553L;
+/**
+ * @author Erich Schroeter
+ * @version 1.0
+ * @created 02-May-2011 6:21:05 PM
+ */
+public class DefaultPreferencePage extends JPanel implements IPreferencePage {
 
 	/**
 	 * Represents whether any setting on this page has changed.
-	 * <p>
+	 * 
 	 * This value will be <code>True</code> if a value has changed, otherwise
 	 * <code>False</code>.
-	 * <p>
 	 */
-	protected boolean dirty = false;
-
-	public DefaultPreferencePage() {
-		this(null);
-	}
-	
+	private boolean dirty;
 	/**
-	 * Calls <code>DefaultPreferencePage(manager, "", "")</code>
+	 * A short title to represent the preference page.
 	 * 
-	 * @see {@link DefaultPreferencePage#DefaultPreferencePage(PreferenceManager, String, String)}
+	 * This value can be used as the label in a {@link IPreferenceNode} if none is
+	 * specified in the node.
+	 */
+	private String title;
+	/**
+	 * Text describing what is on the preference page.
+	 */
+	private String description;
+	/**
+	 * The <code>IPreferenceManager</code> which manages the preferences for which
+	 * this page displays.
+	 */
+	private PreferenceManager manager;
+
+	public DefaultPreferencePage(){
+
+	}
+
+	/**
+	 * Creates a <code>PreferencePage</code> object specifying the <i>title</i>, and
+	 * <i>description</i>.
+	 * 
 	 * @param manager
-	 *            the manager managing the preferences
+	 * @param title    The title. If value is <code>null</code> the <i>title</i>
+	 * attribute is set to empty string ( <code>""</code>)
+	 * @param description    A description of the page. If value is <code>null</code>
+	 * the
+	 * <i>description</i> attribute is set to empty string (
+	 * <code>""</code>)
 	 */
-	public DefaultPreferencePage(PreferenceManager manager) {
-		this(manager, "", "");
+	public DefaultPreferencePage(PreferenceManager manager, String title, String description){
+
 	}
 
 	/**
-	 * Creates a <code>DefaultPreferencePage</code> object specifying the
-	 * <i>container</i>, <i>title</i>, and <i>description</i>.
-	 * <p>
-	 * Calls the super's constructor passing the given <i>manager</i>,
-	 * <i>title</i>, and <i>description</i> arguments to it.
-	 * </p>
-	 * <p>
-	 * The <i>manager</i> argument may not be <code>null</code>. This is to
-	 * prevent the <code>NullPointerException</code>'s from happening during
-	 * runtime. Often in the <code>createContent()</code> function the manager
-	 * is called upon to initialize the values on this
-	 * <code>PreferencePage</code>, and if the manager is <code>null</code> the
-	 * application will fail.
-	 * </p>
-	 * 
-	 * @see {@link PreferencePage#PreferencePage(PreferenceManager, String, String)}
-	 * @param manager
-	 *            the manager managing the preferences
-	 * @param title
-	 *            The title. If value is <code>null</code> the <i>title</i>
-	 *            attribute is set to empty string ( <code>""</code>)
-	 * @param description
-	 *            A description of the page. If value is <code>null</code> the
-	 *            <i>description</i> attribute is set to empty string (
-	 *            <code>""</code>)
+	 * @return the title
 	 */
-	public DefaultPreferencePage(PreferenceManager manager, String title,
-			String description) {
-		super(manager, title, description);
-		createContents();
+	public String getTitle(){
+		return "";
 	}
 
 	/**
-	 * Returns the <i>dirty</i> attribute.
+	 * Sets the <i>title</i> attribute.
+	 * <p> If the argument is <code>null</code>, the <i>title</i> attribute is set to
+	 * the DEFAULT_TITLE.
+	 * <p>
 	 * 
-	 * @see DefaultPreferencePage#dirty
-	 * @return <code>True</code> if a value on the page has changed, else
-	 *         <code>False</code>
+	 * @param title    The new title
 	 */
-	public boolean valuesChanged() {
-		return dirty;
-	}
-
-	//
-	// PreferencePage
-	//
-
-	@Override
-	protected void createContents() {
+	public void setTitle(String title){
 
 	}
 
-	//
-	// IPreferencePage members
-	//
+	/**
+	 * @return the description
+	 */
+	public String getDescription(){
+		return "";
+	}
 
-	@Override
-	public boolean okToLeave() {
-		return !dirty;
+	/**
+	 * Sets the <i>description</i> attribute.
+	 * <p> If the argument is <code>null</code>, the <i>description</i> attribute is
+	 * set to an empty string (<code>""</code>).
+	 * <p>
+	 * 
+	 * @param description    The new description
+	 */
+	public void setDescription(String description){
+
+	}
+
+	/**
+	 * Handles creating the components to be displayed on the
+	 * <code>IPreferencePage</code>.
+	 */
+	public void createContents(){
+
+	}
+
+	/**
+	 * Handles setting the default values on this page.
+	 * 
+	 * @return <code>True</code> if no errors occurred, else <code>False</code>
+	 */
+	public boolean performDefault(){
+		return false;
+	}
+
+	/**
+	 * Handles saving the preferences represented on this preference page. Notifies
+	 * whether saving was successful or an error occurred attempting to.
+	 * 
+	 * @return <code>True</code> if preferences were successfully saved, else
+	 * <code>False</code>
+	 */
+	public boolean performOk(){
+		return false;
+	}
+
+	/**
+	 * Handles cancelling any changes made on this preference page. Notifies whether
+	 * cancelling was successful or if an error occurred.
+	 * 
+	 * @return <code>True</code> if no errors occurred, else <code>False</code>
+	 */
+	public boolean performCancel(){
+		return false;
+	}
+
+	/**
+	 * Checks whether it is alright to leave this page.
+	 * 
+	 * This could be used to prevent the preference page from changing in case
+	 * preferences need to be saved. This could happen if a user selects another page
+	 * from the preference tree after modifying fields without clicking the <i>OK</i>
+	 * or <i>Cancel</i> buttons.
+	 * 
+	 * @return <code>True</code> if the preferences on this page have been saved, else
+	 * <code>False</code>
+	 */
+	public boolean okToLeave(){
+		return false;
 	}
 
 	@Override
-	public boolean performCancel() {
-		return true;
+	public void setManager(IPreferenceManager manager){
+
 	}
 
 	@Override
-	public boolean performOk() {
-		return true;
-	}
-
-	@Override
-	public boolean performDefault() {
-		return true;
+	public IPreferenceManager getManager() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
