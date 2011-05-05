@@ -6,7 +6,7 @@ package org.jpreferences;
  * @version 1.0
  * @created 02-May-2011 6:21:06 PM
  */
-public interface IPreference {
+public @interface IPreference {
 
 	/**
 	 * The identifier for the preference.

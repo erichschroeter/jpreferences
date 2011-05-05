@@ -10,16 +10,38 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.jpreferences.PreferenceManager;
-import org.jpreferences.PreferencePage;
+import org.jpreferences.IPreferenceManager;
+import org.jpreferences.ui.IPreferencePage;
 
-public class ExampleTextFieldPreferencePage extends PreferencePage {
+public class ExampleTextFieldPreferencePage extends JPanel implements IPreferencePage {
 
-	private static final long serialVersionUID = -1625333354602046336L;
+	/**
+	 * Represents whether any setting on this page has changed.
+	 * 
+	 * This value will be <code>True</code> if a value has changed, otherwise
+	 * <code>False</code>.
+	 */
+	private boolean dirty;
+	/**
+	 * A short title to represent the preference page.
+	 * 
+	 * This value can be used as the label in a {@link IPreferenceNode} if none is
+	 * specified in the node.
+	 */
+	private String title;
+	/**
+	 * Text describing what is on the preference page.
+	 */
+	private String description;
+	/**
+	 * The <code>IPreferenceManager</code> which manages the preferences for which
+	 * this page displays.
+	 */
+	private IPreferenceManager manager;
 
-	public ExampleTextFieldPreferencePage(PreferenceManager manager,
+
+	public ExampleTextFieldPreferencePage(IPreferenceManager manager,
 			String title, String description) {
-		super(manager, title, description);
 		createContents();
 	}
 
@@ -41,7 +63,7 @@ public class ExampleTextFieldPreferencePage extends PreferencePage {
 
 	@Override
 	public boolean okToLeave() {
-		return true;
+		return !dirty;
 	}
 
 	@Override
@@ -60,7 +82,7 @@ public class ExampleTextFieldPreferencePage extends PreferencePage {
 	}
 
 	@Override
-	protected void createContents() {
+	public void createContents() {
 		setLayout(new GridBagLayout());
 
 		GridBagConstraints c;
@@ -84,6 +106,36 @@ public class ExampleTextFieldPreferencePage extends PreferencePage {
 				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
 				new Insets(2, 2, 2, 2), 0, 0);
 		add(createTextFieldPanel("Color", "Red", "Green", "Blue", "Opacity"), c);
+	}
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
+	@Override
+	public IPreferenceManager getManager() {
+		return manager;
+	}
+
+	@Override
+	public String getTitle() {
+		return title;
+	}
+
+	@Override
+	public void setDescription(String desc) {
+		description = desc;
+	}
+
+	@Override
+	public void setManager(IPreferenceManager manager) {
+		this.manager = manager;
+	}
+
+	@Override
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 }

@@ -32,7 +32,7 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	/**
 	 * Parent node, or <code>null</code> if root.
 	 */
-	private PreferenceNode parent;
+	private IPreferenceNode parent;
 	/**
 	 * Preference page, or <code>null</code> if not yet loaded.
 	 */

@@ -4,13 +4,6 @@ import javax.swing.Icon;
 
 import junit.framework.TestCase;
 
-import org.jpreferences.ConflictingIdentifierException;
-import org.jpreferences.DefaultPreferenceNode;
-import org.jpreferences.DefaultPreferencePage;
-import org.jpreferences.PreferenceManager;
-import org.jpreferences.PreferenceNode;
-import org.jpreferences.PreferencePage;
-
 public class PreferencePageTest extends TestCase {
 
 	/**
@@ -40,35 +33,7 @@ public class PreferencePageTest extends TestCase {
 	 * </p>
 	 */
 	public void testNullDefaultNodeImpls() {
-		PreferencePage page = new DefaultPreferencePage();
-
-		PreferenceNode node = null;
-		try {
-			node = new DefaultPreferenceNode();
-			node = new DefaultPreferenceNode((PreferencePage) null);
-			node = new DefaultPreferenceNode((PreferencePage) null,
-					(PreferenceNode) null);
-			node = new DefaultPreferenceNode((PreferencePage) null,
-					(String) null);
-			node = new DefaultPreferenceNode((PreferencePage) null,
-					(String) null, (Icon) null);
-			node = new DefaultPreferenceNode((PreferencePage) null,
-					(String) null, (PreferenceNode) null, (String) null,
-					(Icon) null);
-
-			node = new DefaultPreferenceNode(page);
-			node = new DefaultPreferenceNode(page, new DefaultPreferenceNode());
-			node = new DefaultPreferenceNode(page, "");
-			node = new DefaultPreferenceNode(page, "", (Icon) null);
-			node = new DefaultPreferenceNode(page, "",
-					new DefaultPreferenceNode(), "", (Icon) null);
-
-		} catch (NullPointerException e) {
-			e.printStackTrace();
-		} catch (ConflictingIdentifierException e) {
-			e.printStackTrace();
-		}
-		node.getLabel();
+		
 	}
 
 	/**
@@ -90,18 +55,7 @@ public class PreferencePageTest extends TestCase {
 	 * </p>
 	 */
 	public void testNullDefaultPageImpls() {
-		PreferenceManager manager = new PreferenceManager();
-
-		PreferencePage page;
-
-		page = new DefaultPreferencePage();
-		page = new DefaultPreferencePage((PreferenceManager) null);
-		page = new DefaultPreferencePage((PreferenceManager) null,
-				(String) null, (String) null);
-		page = new DefaultPreferencePage(manager);
-		page = new DefaultPreferencePage(manager, "", "");
-
-		page.getTitle();
+		
 	}
 
 }

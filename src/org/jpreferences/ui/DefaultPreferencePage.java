@@ -2,7 +2,6 @@ package org.jpreferences.ui;
 import javax.swing.JPanel;
 
 import org.jpreferences.IPreferenceManager;
-import org.jpreferences.PreferenceManager;
 
 /**
  * @author Erich Schroeter
@@ -33,7 +32,7 @@ public class DefaultPreferencePage extends JPanel implements IPreferencePage {
 	 * The <code>IPreferenceManager</code> which manages the preferences for which
 	 * this page displays.
 	 */
-	private PreferenceManager manager;
+	private IPreferenceManager manager;
 
 	public DefaultPreferencePage(){
 
@@ -51,7 +50,7 @@ public class DefaultPreferencePage extends JPanel implements IPreferencePage {
 	 * <i>description</i> attribute is set to empty string (
 	 * <code>""</code>)
 	 */
-	public DefaultPreferencePage(PreferenceManager manager, String title, String description){
+	public DefaultPreferencePage(IPreferenceManager manager, String title, String description){
 
 	}
 
@@ -122,8 +121,8 @@ public class DefaultPreferencePage extends JPanel implements IPreferencePage {
 	}
 
 	/**
-	 * Handles cancelling any changes made on this preference page. Notifies whether
-	 * cancelling was successful or if an error occurred.
+	 * Handles canceling any changes made on this preference page. Notifies whether
+	 * Canceling was successful or if an error occurred.
 	 * 
 	 * @return <code>True</code> if no errors occurred, else <code>False</code>
 	 */
@@ -132,7 +131,7 @@ public class DefaultPreferencePage extends JPanel implements IPreferencePage {
 	}
 
 	/**
-	 * Checks whether it is alright to leave this page.
+	 * Checks whether it is OK to leave this page.
 	 * 
 	 * This could be used to prevent the preference page from changing in case
 	 * preferences need to be saved. This could happen if a user selects another page
@@ -148,13 +147,12 @@ public class DefaultPreferencePage extends JPanel implements IPreferencePage {
 
 	@Override
 	public void setManager(IPreferenceManager manager){
-
+		this.manager = manager;
 	}
 
 	@Override
 	public IPreferenceManager getManager() {
-		// TODO Auto-generated method stub
-		return null;
+		return manager;
 	}
 
 }

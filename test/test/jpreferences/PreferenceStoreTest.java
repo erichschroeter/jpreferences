@@ -4,55 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.jpreferences.PreferenceStore;
-
+import org.jpreferences.storage.DefaultPreferenceStore;
+import org.jpreferences.storage.IPreferenceStore;
 
 public class PreferenceStoreTest extends AbstractFileSystemTestCase {
-
-	// Keys
-	private final String NAME = "name";
-	private final String PLANET = "planet";
-	private final String KEY_DEFAULT_A = "default_a";
-	private final String KEY_DEFAULT_B = "default_b";
-	private final String KEY_DEFAULT_C = "default_c";
-	// Values
-	private final String VAL_DEFAULT_A = "tesla";
-	private final String VAL_DEFAULT_B = "bearden";
-	private final String VAL_DEFAULT_C = "fogal";
-
-	/**
-	 * Tests to make sure <code>PreferenceStore</code> does not write the
-	 * default values when saving.
-	 * <p>
-	 * The test is performed in the following steps:
-	 * <ol>
-	 * <li>create <code>PreferenceStore</code> with defaults</li>
-	 * <li>save <code>PreferenceStore</code> (save to
-	 * <i>test_name</i>.properties)</li>
-	 * <li>create new <code>PreferenceStore</code> with
-	 * <i>test_name</i>.properties and no defaults</li>
-	 * <li>verify defaults don't exist in new <code>PreferenceStore</code></li>
-	 * </ol>
-	 * </p>
-	 * 
-	 * @throws IOException
-	 *             if the test file cannot be created
-	 */
-	public void testDefaultsNotWritten() throws IOException {
-
-		File file = createFile("testDefaultsNotWritten.properties");
-		Properties defaults = new Properties();
-		defaults.setProperty(KEY_DEFAULT_A, VAL_DEFAULT_A);
-		defaults.setProperty(KEY_DEFAULT_B, VAL_DEFAULT_B);
-		defaults.setProperty(KEY_DEFAULT_C, VAL_DEFAULT_C);
-		PreferenceStore store1 = new PreferenceStore(file, defaults);
-		store1.save();
-
-		PreferenceStore store2 = new PreferenceStore(file);
-		assertEquals(null, store2.getValue(KEY_DEFAULT_A));
-		assertEquals(null, store2.getValue(VAL_DEFAULT_B));
-		assertEquals(null, store2.getValue(VAL_DEFAULT_C));
-	}
 
 	/**
 	 * Tests to make sure <code>PreferenceStore</code> does <b>not</b> write the
@@ -75,25 +30,24 @@ public class PreferenceStoreTest extends AbstractFileSystemTestCase {
 	 * @throws IOException
 	 *             if the test file cannot be created
 	 */
-	public void testPropertiesWrittenWithDefaultsNotWritten()
+	public void testhDefaultsNotWritten()
 			throws IOException {
+		File file = createFile("DefaultsNotWritten.test");
 		
-		File file = createFile("testPropertiesWrittenDefaultsNotWritten.properties");
 		Properties defaults = new Properties();
-		defaults.setProperty(KEY_DEFAULT_A, VAL_DEFAULT_A);
-		defaults.setProperty(KEY_DEFAULT_B, VAL_DEFAULT_B);
-		defaults.setProperty(KEY_DEFAULT_C, VAL_DEFAULT_C);
-		PreferenceStore store1 = new PreferenceStore(file, defaults);
-		store1.setValue(NAME, "erich");
-		store1.setValue(PLANET, "Earth");
+		defaults.setProperty("nikola", "tesla");
+		defaults.setProperty("albert", "einstein");
+		defaults.setProperty("paul", "dirac");
+
+		IPreferenceStore store1 = new DefaultPreferenceStore(file, defaults);
+		store1.create("erich", "schroeter");
 		store1.save();
 
-		PreferenceStore store2 = new PreferenceStore(file);
-		assertEquals(null, store2.getValue(KEY_DEFAULT_A));
-		assertEquals(null, store2.getValue(VAL_DEFAULT_B));
-		assertEquals(null, store2.getValue(VAL_DEFAULT_C));
-		assertEquals(store1.getValue(NAME), store2.getValue(NAME));
-		assertEquals(store1.getValue(PLANET), store2.getValue(PLANET));
+		IPreferenceStore store2 = new DefaultPreferenceStore(file);
+		assertEquals(null, store2.read("nikola"));
+		assertEquals(null, store2.read("albert"));
+		assertEquals(null, store2.read("paul"));
+		assertEquals(store1.read("erich"), store2.read("erich"));
 	}
 
 	/**
@@ -117,14 +71,14 @@ public class PreferenceStoreTest extends AbstractFileSystemTestCase {
 	 */
 	public void testPropertiesWritten() throws IOException {
 
-		File file = createFile("testPropertiesWritten.properties");
-		PreferenceStore store = new PreferenceStore(file);
-		store.setValue(NAME, "erich");
-		store.setValue(PLANET, "Earth");
+		File file = createFile("PropertiesWritten.test");
+		IPreferenceStore store = new DefaultPreferenceStore(file);
+		store.create("erich", "schroeter");
+		store.create("nikola", "tesla");
 		store.save();
 
-		store = new PreferenceStore(file);
-		assertEquals("erich", store.getValue(NAME));
-		assertEquals("Earth", store.getValue(PLANET));
+		store = new DefaultPreferenceStore(file);
+		assertEquals("schroeter", store.read("erich"));
+		assertEquals("tesla", store.read("nikola"));
 	}
 }

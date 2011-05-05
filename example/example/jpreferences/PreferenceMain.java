@@ -1,25 +1,29 @@
 package example.jpreferences;
 
+import java.awt.Dialog;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 
-import org.jpreferences.ConflictingIdentifierException;
-import org.jpreferences.DefaultPreferenceNode;
-import org.jpreferences.DefaultPreferencePage;
-import org.jpreferences.PreferenceDialog;
-import org.jpreferences.PreferenceManager;
-import org.jpreferences.PreferenceNode;
-import org.jpreferences.PreferenceStore;
+import org.jpreferences.IPreferenceManager;
+import org.jpreferences.DefaultPreferenceManager;
+import org.jpreferences.model.DefaultPreferenceNode;
+import org.jpreferences.model.IPreferenceNode;
+import org.jpreferences.storage.ConflictingIdentifierException;
+import org.jpreferences.storage.DefaultPreferenceStore;
+import org.jpreferences.storage.IPreferenceStore;
+import org.jpreferences.ui.DefaultPreferencePage;
+import org.jpreferences.ui.PreferenceDialog;
 
 class PreferenceMain {
-	PreferenceStore store;
+	IPreferenceStore store;
 	PreferenceDialog dlg;
 
-	public PreferenceMain() {
+	public PreferenceMain() throws NullPointerException,
+			ConflictingIdentifierException {
 
-		store = new PreferenceStore(new File("prefs.properties"),
+		store = new DefaultPreferenceStore(new File("prefs.properties"),
 				"This file contains preference settings");
 		try {
 			store.load();
@@ -27,7 +31,7 @@ class PreferenceMain {
 			// do nothing
 		}
 
-		PreferenceManager mgr = new PreferenceManager(store);
+		IPreferenceManager mgr = new DefaultPreferenceManager(store);
 
 		DefaultPreferencePage defaultPage = new DefaultPreferencePage(mgr,
 				"DefaultPage", "A default preference page");
@@ -35,26 +39,32 @@ class PreferenceMain {
 				mgr, "Text Fields", "Show a page populated with text fields");
 
 		try {
-			PreferenceNode parent = new DefaultPreferenceNode("Parent");
-			mgr.add(new DefaultPreferenceNode(defaultPage, "Default Page"));
+			IPreferenceNode parent = new DefaultPreferenceNode();
+			mgr.add(new DefaultPreferenceNode("default", defaultPage,
+					"Default Page"));
 			mgr.add(parent);
-			mgr.addTo(parent, new DefaultPreferenceNode("Child"));
-			mgr.add(new DefaultPreferenceNode(textFieldPage, "Text Fields"));
+			mgr.addTo(parent, new DefaultPreferenceNode("child",
+					new DefaultPreferencePage(), "Test Child"));
+			mgr.add(new DefaultPreferenceNode("text", textFieldPage,
+					"Text Fields"));
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 		} catch (ConflictingIdentifierException e) {
 			e.printStackTrace();
 		}
 
-		dlg = new PreferenceDialog(mgr);
+		dlg = new PreferenceDialog((Dialog) null, mgr);
 		dlg.addWindowListener(dialogWindowListener());
 		dlg.setVisible(true);
 	}
 
 	/**
 	 * @param args
+	 * @throws ConflictingIdentifierException
+	 * @throws NullPointerException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NullPointerException,
+			ConflictingIdentifierException {
 		new PreferenceMain();
 	}
 

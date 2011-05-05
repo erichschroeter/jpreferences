@@ -1,5 +1,16 @@
 package org.jpreferences.ui;
-import org.jpreferences.PreferenceManager;
+import java.awt.Dialog;
+import java.awt.Window;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowListener;
+
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.event.TreeSelectionListener;
+
+import org.jpreferences.IPreferenceManager;
+import org.jpreferences.DefaultPreferenceManager;
 import org.jpreferences.model.IPreferenceNode;
 
 /**
@@ -33,7 +44,7 @@ public class PreferenceDialog extends JDialog {
 	 * The object managing the <code>IPreferenceNode</code>'s which in turn represent
 	 * a corresponding <code>IPreferencePage</code>.
 	 */
-	private PreferenceManager manager;
+	private DefaultPreferenceManager manager;
 	/**
 	 * The interface object the user interacts with to view properties from different
 	 * pages.
@@ -51,14 +62,6 @@ public class PreferenceDialog extends JDialog {
 	 */
 	private JPanel pagePanel;
 	protected Buttons buttons;
-
-	public PreferenceDialog(){
-
-	}
-
-	public void finalize() throws Throwable {
-		super.finalize();
-	}
 
 	/**
 	 * Creates a <code>PreferenceDialog</code> calling {@link JDialog(Dialog,
