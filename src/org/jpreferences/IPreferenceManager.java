@@ -63,7 +63,7 @@ public interface IPreferenceManager {
 	 * @param preference
 	 *            the preference
 	 */
-	public void addPreference(IPreference preference);
+	public void addPreference(Preference preference);
 
 	/**
 	 * Removes the specified preference from the manager. This should be a
@@ -73,7 +73,7 @@ public interface IPreferenceManager {
 	 * @param preference
 	 *            the preference
 	 */
-	public void removePreference(IPreference preference);
+	public void removePreference(Preference preference);
 
 	/**
 	 * Returns the specified preference from the manager.
@@ -83,7 +83,7 @@ public interface IPreferenceManager {
 	 * @param id
 	 *            the identifier
 	 */
-	public IPreference getPreference(String id);
+	public Preference getPreference(String id);
 
 	/**
 	 * Adds the given node to the default root node.
@@ -110,4 +110,10 @@ public interface IPreferenceManager {
 	 */
 	public void addTo(IPreferenceNode parent, IPreferenceNode child);
 
+	/**
+	 * Returns the root node of all root nodes.
+	 * 
+	 * @return The master root node
+	 */
+	public IPreferenceNode getRoot();
 }

@@ -55,12 +55,6 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 */
 	private Icon icon;
 
-
-
-	public void finalize() throws Throwable {
-
-	}
-
 	/**
 	 * Creates a preference node without specifying any arguments.
 	 * 
@@ -72,7 +66,7 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 */
 	public DefaultPreferenceNode()
 	  throws NullPointerException,ConflictingIdentifierException{
-
+		this(null, null, null);
 	}
 
 	/**
@@ -91,7 +85,7 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 */
 	public DefaultPreferenceNode(String identifier, IPreferencePage page, String label)
 	  throws NullPointerException,ConflictingIdentifierException{
-
+		this(null, identifier, page, label, null);
 	}
 
 	/**
@@ -111,7 +105,7 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 */
 	public DefaultPreferenceNode(String identifier, IPreferencePage page, String label, Icon icon)
 	  throws NullPointerException,ConflictingIdentifierException{
-
+		this(null, identifier, page, label, icon);
 	}
 
 	/**
@@ -131,7 +125,7 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 */
 	public DefaultPreferenceNode(IPreferenceNode parent, String identifier, IPreferencePage page, String label)
 	  throws NullPointerException,ConflictingIdentifierException{
-
+		this(parent, identifier, page, label, null);
 	}
 
 	/**
@@ -152,7 +146,12 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 */
 	public DefaultPreferenceNode(IPreferenceNode parent, String identifier, IPreferencePage page, String label, Icon icon)
 	  throws NullPointerException,ConflictingIdentifierException{
-
+		setParent(parent);
+		setIdentifier(identifier);
+		setPage(page);
+		setLabel(label);
+		setIcon(icon);
+		children = new Vector<IPreferenceNode>();
 	}
 
 	/**
@@ -228,7 +227,7 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 * @return the label
 	 */
 	public String getLabel(){
-		return "";
+		return label;
 	}
 
 	/**
@@ -237,31 +236,29 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 * @param label    the label
 	 */
 	public void setLabel(String label){
-
+		this.label = label;
 	}
 
 	@Override
-	public void insert(MutableTreeNode arg0, int arg1) {
+	public void insert(MutableTreeNode parent, int index) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void remove(int arg0) {
-		// TODO Auto-generated method stub
-		
+	public void remove(int index) {
+		children.remove(index);
 	}
 
 	@Override
-	public void remove(MutableTreeNode arg0) {
-		// TODO Auto-generated method stub
-		
+	public void remove(MutableTreeNode node) {
+		children.remove(node);
 	}
 
 	@Override
 	public void removeFromParent() {
-		// TODO Auto-generated method stub
-		
+		getParent().getIndex(this);
+		// TODO how does DefaultMutatableTreeNode handle this?
 	}
 
 	@Override
@@ -278,44 +275,37 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 
 	@Override
 	public Enumeration children() {
-		// TODO Auto-generated method stub
-		return null;
+		return children.elements();
 	}
 
 	@Override
 	public boolean getAllowsChildren() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
-	public TreeNode getChildAt(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public TreeNode getChildAt(int index) {
+		return children.get(index);
 	}
 
 	@Override
 	public int getChildCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		return children.size();
 	}
 
 	@Override
-	public int getIndex(TreeNode arg0) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getIndex(TreeNode node) {
+		return children.indexOf(node);
 	}
 
 	@Override
 	public TreeNode getParent() {
-		// TODO Auto-generated method stub
-		return null;
+		return parent;
 	}
 
 	@Override
 	public boolean isLeaf() {
-		// TODO Auto-generated method stub
-		return false;
+		return getChildCount() == 0 ? true : false;
 	}
 
 }

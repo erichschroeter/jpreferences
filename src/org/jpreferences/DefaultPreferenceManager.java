@@ -77,6 +77,7 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 			throws NullPointerException, ConflictingIdentifierException {
 		setRoot(root != null ? root : new DefaultPreferenceNode());
 		setStore(store);
+		setCurrentPage(getRoot().getPage());
 	}
 
 	/**
@@ -121,6 +122,7 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 * 
 	 * @return The master root node
 	 */
+	@Override
 	public IPreferenceNode getRoot() {
 		return default_root;
 	}
@@ -157,7 +159,7 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	}
 
 	@Override
-	public void addPreference(IPreference preference) {
+	public void addPreference(Preference preference) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -168,13 +170,13 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	}
 
 	@Override
-	public IPreference getPreference(String id) {
+	public Preference getPreference(String id) {
 //		String[] path = id.split("/");
 		return null;
 	}
 
 	@Override
-	public void removePreference(IPreference preference) {
+	public void removePreference(Preference preference) {
 		
 	}
 
