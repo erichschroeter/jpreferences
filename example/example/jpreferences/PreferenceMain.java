@@ -36,7 +36,7 @@ class PreferenceMain {
 		ExampleMixedComponentsPage mixedFieldPage = new ExampleMixedComponentsPage(
 				mgr, "Mixed Fields",
 				"Show a page populated with a mix of field types");
-		
+
 		IPreferenceNode parent = new DefaultPreferenceNode("parent",
 				new DefaultPreferencePage(mgr, null,
 						"This is a parent node page"), "Parent");
@@ -46,7 +46,8 @@ class PreferenceMain {
 					"Default Page"));
 			mgr.add(parent);
 			mgr.addTo(parent, new DefaultPreferenceNode("child",
-					new DefaultPreferencePage(), "Empty child"));
+					new DefaultPreferencePage(mgr, "Child Node",
+							"This is a child preference page."), null));
 			mgr.add(new DefaultPreferenceNode("text", textFieldPage,
 					"Text Fields"));
 			mgr.add(new DefaultPreferenceNode("mixed", mixedFieldPage,

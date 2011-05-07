@@ -1,8 +1,15 @@
 package example.jpreferences;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Random;
+
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 
 import org.jpreferences.IPreferenceManager;
 
@@ -43,4 +50,30 @@ public class ExampleMixedComponentsPage extends ExamplePreferencePage {
 
 	}
 
+	@Override
+	public boolean performDefault() {
+		for (Component c : getComponents()) {
+			if (c instanceof JPanel) {
+				JPanel panel = (JPanel) c;
+				fillJPanelFieldsWithRandomData(panel);
+			}
+		}
+		return super.performDefault();
+	}
+
+	private void fillJPanelFieldsWithRandomData(JPanel panel) {
+		Random random = new Random();
+		for (Component c : panel.getComponents()) {
+			if (c instanceof JTextField) {
+				JTextField field = (JTextField) c;
+				field.setText(Integer.toString(random.nextInt(255)));
+			} else if (c instanceof JRadioButton) {
+				JRadioButton radio = (JRadioButton) c;
+				radio.setSelected(random.nextBoolean());
+			} else if (c instanceof JCheckBox) {
+				JCheckBox check = (JCheckBox) c;
+				check.setSelected(random.nextBoolean());
+			}
+		}
+	}
 }

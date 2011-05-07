@@ -1,8 +1,13 @@
 package example.jpreferences;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Random;
+
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.jpreferences.IPreferenceManager;
 
@@ -24,7 +29,8 @@ public class ExampleTextFieldPreferencePage extends ExamplePreferencePage {
 		c = new GridBagConstraints(0, 0, 2, 1, 1.0, 1.0,
 				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
 				new Insets(2, 2, 2, 2), 0, 0);
-		add(Factory.createTextFieldPanel("Time", "Year", "Month", "Day", "Hour", "Minute", "Second"), c);
+		add(Factory.createTextFieldPanel("Time", "Year", "Month", "Day",
+				"Hour", "Minute", "Second"), c);
 
 		c = new GridBagConstraints(0, 1, 1, 1, 1.0, 1.0,
 				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
@@ -39,7 +45,29 @@ public class ExampleTextFieldPreferencePage extends ExamplePreferencePage {
 		c = new GridBagConstraints(0, 2, 2, 1, 1.0, 1.0,
 				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
 				new Insets(2, 2, 2, 2), 0, 0);
-		add(Factory.createTextFieldPanel("Color", "Red", "Green", "Blue", "Opacity"), c);
+		add(Factory.createTextFieldPanel("Color", "Red", "Green", "Blue",
+				"Opacity"), c);
+	}
+
+	@Override
+	public boolean performDefault() {
+		for (Component c : getComponents()) {
+			if (c instanceof JPanel) {
+				JPanel panel = (JPanel) c;
+				fillJPanelFieldsWithRandomData(panel);
+			}
+		}
+		return super.performDefault();
+	}
+
+	private void fillJPanelFieldsWithRandomData(JPanel panel) {
+		Random random = new Random();
+		for (Component c : panel.getComponents()) {
+			if (c instanceof JTextField) {
+				JTextField field = (JTextField) c;
+				field.setText(Integer.toString(random.nextInt(1000)));
+			}
+		}
 	}
 
 }
