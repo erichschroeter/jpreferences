@@ -116,4 +116,31 @@ public interface IPreferenceManager {
 	 * @return The master root node
 	 */
 	public IPreferenceNode getRoot();
+
+	/**
+	 * Adds a {@link ICurrentPageListener} to the list of listeners.
+	 * 
+	 * @param listener
+	 *            the listener
+	 */
+	public void addCurrentPageListener(ICurrentPageListener listener);
+
+	/**
+	 * Removes a {@link ICurrentPageListener} from the list of listeners.
+	 * 
+	 * @param listener
+	 *            the listener
+	 */
+	public void removeCurrentPageListener(ICurrentPageListener listener);
+
+	/**
+	 * Registers a class with the preference manager to be searched for
+	 * {@link Preference} annotations.
+	 * 
+	 * @param container any class containing {@link Preference} annotations
+	 */
+	@SuppressWarnings("rawtypes")
+	public void registerPreferenceContainer(Class container);
+	
+	public void gatherAnnotations();
 }

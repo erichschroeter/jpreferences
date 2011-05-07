@@ -1,15 +1,18 @@
 package test.jpreferences;
 
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.jpreferences.storage.DefaultPreferenceStore;
 import org.jpreferences.storage.IPreferenceStore;
+import org.jpreferences.storage.XmlPreferenceStore;
+import org.junit.After;
 
-public class PreferenceStoreTest extends AbstractFileSystemTestCase {
+public class XmlPreferenceStoreTest extends AbstractFileSystemTestCase {
 
-	@Override
+	@After
 	protected void tearDown() throws Exception {
 		cleanupTestRoot();
 	}
@@ -39,17 +42,17 @@ public class PreferenceStoreTest extends AbstractFileSystemTestCase {
 			throws IOException {
 		File file = createFile("DefaultsNotWritten.test");
 		
-		Properties defaults = new Properties();
-		defaults.setProperty("nikola", "tesla");
-		defaults.setProperty("albert", "einstein");
-		defaults.setProperty("paul", "dirac");
+		Map<String, String> defaults = new HashMap<String, String>();
+		defaults.put("nikola", "tesla");
+		defaults.put("albert", "einstein");
+		defaults.put("paul", "dirac");
 
-		IPreferenceStore store1 = new DefaultPreferenceStore(file, defaults);
+		IPreferenceStore store1 = new XmlPreferenceStore(file, defaults);
 		store1.create("erich", "schroeter");
 		store1.createPreference("tom", "bearden");
 		store1.save();
 
-		IPreferenceStore store2 = new DefaultPreferenceStore(file);
+		IPreferenceStore store2 = new XmlPreferenceStore(file);
 		assertEquals(null, store2.read("nikola"));
 		assertEquals(null, store2.read("albert"));
 		assertEquals(null, store2.read("paul"));
@@ -79,12 +82,12 @@ public class PreferenceStoreTest extends AbstractFileSystemTestCase {
 	public void testPropertiesWritten() throws IOException {
 
 		File file = createFile("PropertiesWritten.test");
-		IPreferenceStore store = new DefaultPreferenceStore(file);
+		IPreferenceStore store = new XmlPreferenceStore(file);
 		store.create("erich", "schroeter");
 		store.createPreference("nikola", "tesla");
 		store.save();
 
-		store = new DefaultPreferenceStore(file);
+		store = new XmlPreferenceStore(file);
 		assertEquals("schroeter", store.read("erich"));
 		assertEquals("tesla", store.read("nikola"));
 	}

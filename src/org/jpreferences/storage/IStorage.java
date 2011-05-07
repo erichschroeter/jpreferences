@@ -1,6 +1,5 @@
 package org.jpreferences.storage;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -20,10 +19,8 @@ public interface IStorage {
 	 * #save(OutputStream)}.
 	 * 
 	 * @see #save(OutputStream)
-	 * @exception java.io.IOException if there is a problem saving this store
 	 */
-	public boolean save()
-	  throws IOException;
+	public boolean save();
 
 	/**
 	 * Saves the objects in the storage to the specified output stream.
@@ -31,19 +28,15 @@ public interface IStorage {
 	 * @see #save()
 	 * 
 	 * @param os
-	 * @exception java.io.IOException if there is a problem saving this store
 	 */
-	public boolean save(OutputStream os)
-	  throws IOException;
+	public boolean save(OutputStream os);
 
 	/**
 	 * Loads objects into the storage from a default input stream.
 	 * 
 	 * @see #load(InputStream)
-	 * @exception IOException IOException
 	 */
-	public boolean load()
-	  throws IOException;
+	public boolean load();
 
 	/**
 	 * Loads the objects from the given input stream into the storage.
@@ -51,9 +44,7 @@ public interface IStorage {
 	 * @see #load()
 	 * 
 	 * @param is    The input stream
-	 * @exception IOException IOException
 	 */
-	public boolean load(InputStream is)
-	  throws IOException;
+	public boolean load(InputStream is);
 
 }

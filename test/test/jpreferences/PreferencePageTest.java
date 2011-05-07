@@ -1,7 +1,5 @@
 package test.jpreferences;
 
-import javax.swing.Icon;
-
 import junit.framework.TestCase;
 
 public class PreferencePageTest extends TestCase {

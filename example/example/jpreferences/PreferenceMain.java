@@ -4,7 +4,6 @@ import java.awt.Dialog;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.IOException;
 
 import org.jpreferences.IPreferenceManager;
 import org.jpreferences.DefaultPreferenceManager;
@@ -17,6 +16,7 @@ import org.jpreferences.ui.DefaultPreferencePage;
 import org.jpreferences.ui.PreferenceDialog;
 
 class PreferenceMain {
+
 	IPreferenceStore store;
 	PreferenceDialog dlg;
 
@@ -25,28 +25,32 @@ class PreferenceMain {
 
 		store = new DefaultPreferenceStore(new File("prefs.properties"),
 				"This file contains preference settings");
-		try {
-			store.load();
-		} catch (IOException e) {
-			// do nothing
-		}
+		store.load();
 
 		IPreferenceManager mgr = new DefaultPreferenceManager(store);
 
-		DefaultPreferencePage defaultPage = new DefaultPreferencePage(mgr,
-				"DefaultPage", "A default preference page");
+		ExampleDefaultPage examplePage = new ExampleDefaultPage(mgr,
+				"Child title", "This is an example description");
 		ExampleTextFieldPreferencePage textFieldPage = new ExampleTextFieldPreferencePage(
 				mgr, "Text Fields", "Show a page populated with text fields");
+		ExampleMixedComponentsPage mixedFieldPage = new ExampleMixedComponentsPage(
+				mgr, "Mixed Fields",
+				"Show a page populated with a mix of field types");
+		
+		IPreferenceNode parent = new DefaultPreferenceNode("parent",
+				new DefaultPreferencePage(mgr, null,
+						"This is a parent node page"), "Parent");
 
 		try {
-			IPreferenceNode parent = new DefaultPreferenceNode();
-			mgr.add(new DefaultPreferenceNode("default", defaultPage,
+			mgr.add(new DefaultPreferenceNode("default", examplePage,
 					"Default Page"));
 			mgr.add(parent);
 			mgr.addTo(parent, new DefaultPreferenceNode("child",
-					new DefaultPreferencePage(), "Test Child"));
+					new DefaultPreferencePage(), "Empty child"));
 			mgr.add(new DefaultPreferenceNode("text", textFieldPage,
 					"Text Fields"));
+			mgr.add(new DefaultPreferenceNode("mixed", mixedFieldPage,
+					"Mixed Components"));
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 		} catch (ConflictingIdentifierException e) {

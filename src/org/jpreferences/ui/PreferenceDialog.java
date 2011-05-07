@@ -2,12 +2,17 @@ package org.jpreferences.ui;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -15,19 +20,24 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+import org.jpreferences.ICurrentPageListener;
 import org.jpreferences.IPreferenceManager;
-import org.jpreferences.DefaultPreferenceManager;
 import org.jpreferences.model.IPreferenceNode;
 
 /**
- * @author erisch
+ * Provides a graphical interface for users to interact with preference pages.
+ * From these preference pages, preferences may be updated.
+ * 
+ * @author Erich Schroeter
  * @version 1.0
  * @created 02-May-2011 6:21:06 PM
  */
-public class PreferenceDialog extends JDialog {
+@SuppressWarnings("serial")
+public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 
 	/**
 	 * Buttons available on the <code>PreferencePage</code>.
@@ -124,8 +134,9 @@ public class PreferenceDialog extends JDialog {
 		setMinimumSize(new Dimension(400, 400));
 		// add a window listener to save the preferences when the dialog closes
 		addWindowListener(dialogWindowListener());
-		
+
 		tree = new JTree(manager.getRoot());
+		manager.addCurrentPageListener(this);
 		currentPage = manager.getCurrentPage();
 
 		GridBagConstraints c;
@@ -152,7 +163,7 @@ public class PreferenceDialog extends JDialog {
 		// PagePanel
 		//
 		pagePanel = new JPanel(new GridBagLayout());
-		pagePanel.add((JPanel) manager.getCurrentPage(), pagePanelConstraints);
+		pagePanel.add(currentPage.getContents(), pagePanelConstraints);
 
 		// Buttons (i.e. OK, Cancel, Defaults)
 		JPanel buttonPanel = generateButtons(new Buttons[] { Buttons.OK,
@@ -234,7 +245,29 @@ public class PreferenceDialog extends JDialog {
 	 * @param buttons
 	 */
 	protected JPanel generateButtons(Buttons[] buttons) {
-		return null;
+		JPanel panel = new JPanel(new FlowLayout());
+		List<Buttons> list = Arrays.asList(buttons);
+
+		if (list.contains(Buttons.OK)) {
+			JButton button = new JButton("OK");
+			button.setName(button.getText().toLowerCase());
+			button.setToolTipText("Save the changes made on this page");
+			panel.add(button);
+		}
+		if (list.contains(Buttons.CANCEL)) {
+			JButton button = new JButton("Cancel");
+			button.setName(button.getText().toLowerCase());
+			button.setToolTipText("Ignore the intended changes made on this page");
+			panel.add(button);
+		}
+		if (list.contains(Buttons.DEFAULTS)) {
+			JButton button = new JButton("Defaults");
+			button.setName(button.getText().toLowerCase());
+			button.setToolTipText("Restores the default values for this page");
+			panel.add(button);
+		}
+
+		return panel;
 	}
 
 	/**
@@ -244,7 +277,15 @@ public class PreferenceDialog extends JDialog {
 	 *         <code>{@link PreferenceDialog#changePageTo(IPreferencePage)</code>
 	 */
 	private TreeSelectionListener pageTreeSelectionListener() {
-		return null;
+		return new TreeSelectionListener() {
+
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				IPreferenceNode node = (IPreferenceNode) e.getPath()
+						.getLastPathComponent();
+				changePageTo(node.getPage());
+			}
+		};
 	}
 
 	/**
@@ -253,19 +294,84 @@ public class PreferenceDialog extends JDialog {
 	 *         closing.
 	 */
 	private WindowListener dialogWindowListener() {
-		return null;
+		return new WindowListener() {
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+			}
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				currentPage.performCancel();
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				currentPage.performCancel();
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+			}
+		};
 	}
 
 	private ActionListener okActionListener() {
-		return null;
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentPage.performOk();
+				setVisible(false);
+				dispose();
+			}
+		};
 	}
 
 	private ActionListener cancelActionListener() {
-		return null;
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentPage.performCancel();
+				setVisible(false);
+				dispose();
+			}
+		};
 	}
 
 	private ActionListener defaultActionListener() {
-		return null;
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentPage.performDefault();
+			}
+		};
+	}
+
+	//
+	// ICurrentPageListener members
+	//
+
+	@Override
+	public void handleCurrentPageChanged(IPreferencePage current) {
+		pagePanel.remove(currentPage.getContents());
+		currentPage = current;
+		pagePanel.add(currentPage.getContents(), pagePanelConstraints);
+		pack();
 	}
 
 }

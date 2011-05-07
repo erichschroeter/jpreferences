@@ -1,8 +1,9 @@
 package org.jpreferences;
 
+import java.util.Vector;
+
 import org.jpreferences.model.DefaultPreferenceNode;
 import org.jpreferences.storage.ConflictingIdentifierException;
-import org.jpreferences.storage.DefaultPreferenceStore;
 import org.jpreferences.storage.IPreferenceStore;
 import org.jpreferences.ui.IPreferencePage;
 import org.jpreferences.model.IPreferenceNode;
@@ -30,14 +31,15 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 * </p>
 	 */
 	private IPreferenceNode default_root;
-	/**
-	 * The preference store in which this manager manages.
-	 */
+	/** The preference store in which this manager manages. */
 	private IPreferenceStore store;
-	/**
-	 * The preference page currently being displayed.
-	 */
+	/** The preference page currently being displayed. */
 	private IPreferencePage current;
+	/** The listeners listening for the current page to change */
+	private Vector<ICurrentPageListener> currentListeners;
+	/** Classes containing {@link Preference} annotations */
+	@SuppressWarnings("rawtypes")
+	private Vector<Class> preferenceContainers;
 
 	public DefaultPreferenceManager() throws NullPointerException,
 			ConflictingIdentifierException {
@@ -50,8 +52,8 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 * @throws ConflictingIdentifierException
 	 * @throws NullPointerException
 	 */
-	public DefaultPreferenceManager(IPreferenceNode root) throws NullPointerException,
-			ConflictingIdentifierException {
+	public DefaultPreferenceManager(IPreferenceNode root)
+			throws NullPointerException, ConflictingIdentifierException {
 		this(root, null);
 	}
 
@@ -75,10 +77,37 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 */
 	public DefaultPreferenceManager(IPreferenceNode root, IPreferenceStore store)
 			throws NullPointerException, ConflictingIdentifierException {
-		setRoot(root != null ? root : new DefaultPreferenceNode());
+		currentListeners = new Vector<ICurrentPageListener>();
+		preferenceContainers = new Vector<Class>();
+		setRoot(root != null ? root : new DefaultPreferenceNode("root", null,
+				""));
 		setStore(store);
 		setCurrentPage(getRoot().getPage());
 	}
+
+	/**
+	 * Sets the default root node of all nodes to be managed.
+	 * <p>
+	 * If <i>root</i> is <code>null</code>, the <i>default_root</code> attribute
+	 * is set to a new <code>DefaultPreferenceNode</code>
+	 * </p>
+	 * 
+	 * @param root
+	 *            the master root node
+	 */
+	private void setRoot(IPreferenceNode root) {
+		default_root = root;
+	}
+
+	private void notifyCurrentPageListeners(IPreferencePage current) {
+		for (ICurrentPageListener l : currentListeners) {
+			l.handleCurrentPageChanged(current);
+		}
+	}
+
+	//
+	// IPreferenceManager members
+	//
 
 	/**
 	 * Sets the store for which this <code>PreferenceManager</code> manages.
@@ -104,20 +133,6 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	}
 
 	/**
-	 * Sets the default root node of all nodes to be managed.
-	 * <p>
-	 * If <i>root</i> is <code>null</code>, the <i>default_root</code> attribute
-	 * is set to a new <code>DefaultPreferenceNode</code>
-	 * </p>
-	 * 
-	 * @param root
-	 *            the master root node
-	 */
-	private void setRoot(IPreferenceNode root) {
-		default_root = root;
-	}
-
-	/**
 	 * Returns the root node of all root nodes.
 	 * 
 	 * @return The master root node
@@ -140,7 +155,8 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 */
 	@Override
 	public void add(IPreferenceNode node) {
-		default_root.insert(node, 0);
+//		default_root.insert(node, default_root.getChildCount() - 1);
+		addTo(default_root, node);
 	}
 
 	/**
@@ -155,13 +171,14 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 */
 	@Override
 	public void addTo(IPreferenceNode parent, IPreferenceNode child) {
-		parent.insert(child, 0);
+//		parent.insert(child, parent.getChildCount() - 1);
+		parent.add(child);
 	}
 
 	@Override
 	public void addPreference(Preference preference) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -171,23 +188,71 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 
 	@Override
 	public Preference getPreference(String id) {
-//		String[] path = id.split("/");
+		// String[] path = id.split("/");
 		return null;
 	}
 
 	@Override
 	public void removePreference(Preference preference) {
-		
+
 	}
 
 	@Override
 	public void setCurrentPage(IPreferencePage page) {
 		current = page;
+		notifyCurrentPageListeners(page);
+	}
+
+	/**
+	 * Attempts to set the current page to the page specified via a path. The
+	 * path is delimited by the character '/'.
+	 * <p>
+	 * If the specified page at the end of the path does not exist, the current
+	 * page is not changed.
+	 * </p>
+	 * 
+	 * @see #setCurrentPage(IPreferencePage)
+	 */
+	@Override
+	public void setCurrentPage(String path) {
+		String[] ids = path.split("/");
+		IPreferenceNode node = getRoot();
+		for (String id : ids) {
+			for (int i = 0; i < node.getChildCount(); i++) {
+				IPreferenceNode child = (IPreferenceNode) node.getChildAt(i);
+				if (child.getIdentifier().equals(id)) {
+					node = child;
+					break;
+				}
+			}
+		}
+		if (node.getIdentifier().equals(ids[ids.length - 1])) {
+			setCurrentPage(node.getPage());
+		}
 	}
 
 	@Override
-	public void setCurrentPage(String path) {
-		
+	public void addCurrentPageListener(ICurrentPageListener listener) {
+		currentListeners.add(listener);
+	}
+
+	@Override
+	public void removeCurrentPageListener(ICurrentPageListener listener) {
+		currentListeners.remove(listener);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void registerPreferenceContainer(Class container) {
+		preferenceContainers.add(container);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void gatherAnnotations() {
+		for (Class c : preferenceContainers) {
+			c.getAnnotation(c);
+		}
 	}
 
 }
