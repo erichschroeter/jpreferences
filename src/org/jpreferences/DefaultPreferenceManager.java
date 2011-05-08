@@ -37,50 +37,83 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	private IPreferencePage current;
 	/** The listeners listening for the current page to change */
 	private Vector<ICurrentPageListener> currentListeners;
-	/** Classes containing {@link Preference} annotations */
-	@SuppressWarnings("rawtypes")
-	private Vector<Class> preferenceContainers;
 
-	public DefaultPreferenceManager() throws NullPointerException,
-			ConflictingIdentifierException {
-		this(null, null);
+	/**
+	 * Creates a preference manager without specifying the root node or
+	 * preference store.
+	 * <p>
+	 * Creates a default root node with an identifier of "root".
+	 * </p>
+	 */
+	public DefaultPreferenceManager() {
+		IPreferenceNode root;
+		try {
+			root = new DefaultPreferenceNode("root", null, "");
+		} catch (ConflictingIdentifierException e) {
+			throw new IllegalStateException(e);
+		}
+		init(root, null);
 	}
 
 	/**
+	 * Creates a preference manager without specifying the preference store.
 	 * 
+	 * @see #DefaultPreferenceManager(IPreferenceNode, IPreferenceStore)
 	 * @param root
-	 * @throws ConflictingIdentifierException
-	 * @throws NullPointerException
+	 *            the root node
 	 */
-	public DefaultPreferenceManager(IPreferenceNode root)
-			throws NullPointerException, ConflictingIdentifierException {
+	public DefaultPreferenceManager(IPreferenceNode root) {
 		this(root, null);
 	}
 
 	/**
+	 * Creates a preference manager without specifying the root node.
+	 * <p>
+	 * Creates a default root node with an identifier of "root".
+	 * </p>
 	 * 
 	 * @param store
-	 * @throws ConflictingIdentifierException
-	 * @throws NullPointerException
+	 *            the preference store
 	 */
-	public DefaultPreferenceManager(IPreferenceStore store)
-			throws NullPointerException, ConflictingIdentifierException {
-		this(null, store);
+	public DefaultPreferenceManager(IPreferenceStore store) {
+		IPreferenceNode root;
+		try {
+			root = new DefaultPreferenceNode("root", null, "");
+		} catch (ConflictingIdentifierException e) {
+			throw new IllegalStateException(e);
+		}
+		init(root, store);
 	}
 
 	/**
+	 * Creates a preference manager specifying the root node and preference
+	 * store.
 	 * 
 	 * @param root
+	 *            the root node
 	 * @param store
-	 * @throws ConflictingIdentifierException
-	 * @throws NullPointerException
+	 *            the preference store
+	 * @exception NullPointerException
+	 *                if the root node is <code>null</code>
 	 */
-	public DefaultPreferenceManager(IPreferenceNode root, IPreferenceStore store)
-			throws NullPointerException, ConflictingIdentifierException {
+	public DefaultPreferenceManager(IPreferenceNode root, IPreferenceStore store) {
+		if (root == null) {
+			throw new NullPointerException("The root node cannot be null");
+		}
+		init(root, store);
+	}
+
+	/**
+	 * Handles setting the class properties.
+	 * 
+	 * @param root
+	 *            the default root node
+	 * @param store
+	 *            the preference store
+	 */
+	private void init(IPreferenceNode root, IPreferenceStore store) {
 		currentListeners = new Vector<ICurrentPageListener>();
-		preferenceContainers = new Vector<Class>();
-		setRoot(root != null ? root : new DefaultPreferenceNode("root", null,
-				""));
+		setRoot(root);
 		setStore(store);
 		setCurrentPage(getRoot().getPage());
 	}
@@ -99,6 +132,13 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 		default_root = root;
 	}
 
+	/**
+	 * Handles notifying all the {@link ICurrentPageListener}'s when
+	 * {@link #current} changes.
+	 * 
+	 * @param current
+	 *            the new current page
+	 */
 	private void notifyCurrentPageListeners(IPreferencePage current) {
 		for (ICurrentPageListener l : currentListeners) {
 			l.handleCurrentPageChanged(current);
@@ -146,8 +186,8 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 * Adds the given node to the default root node.
 	 * <p>
 	 * This function is simply a convenience method for
-	 * <code>addTo(IPreferenceNode, IPreferenceNode)</code>. Calling this
-	 * function is equivalent to calling <code>addTo(null, node)</code>.
+	 * {@link #add(IPreferenceNode, IPreferenceNode)}. Calling this function is
+	 * equivalent to calling <code>addTo(null, node)</code>.
 	 * </p>
 	 * 
 	 * @param node
@@ -155,8 +195,7 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 */
 	@Override
 	public void add(IPreferenceNode node) {
-//		default_root.insert(node, default_root.getChildCount() - 1);
-		addTo(default_root, node);
+		add(default_root, node);
 	}
 
 	/**
@@ -170,8 +209,7 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 *            The child being added
 	 */
 	@Override
-	public void addTo(IPreferenceNode parent, IPreferenceNode child) {
-//		parent.insert(child, parent.getChildCount() - 1);
+	public void add(IPreferenceNode parent, IPreferenceNode child) {
 		parent.add(child);
 	}
 
@@ -239,20 +277,6 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	@Override
 	public void removeCurrentPageListener(ICurrentPageListener listener) {
 		currentListeners.remove(listener);
-	}
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public void registerPreferenceContainer(Class container) {
-		preferenceContainers.add(container);
-	}
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public void gatherAnnotations() {
-		for (Class c : preferenceContainers) {
-			c.getAnnotation(c);
-		}
 	}
 
 }

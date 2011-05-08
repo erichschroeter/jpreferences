@@ -89,8 +89,8 @@ public interface IPreferenceManager {
 	 * Adds the given node to the default root node.
 	 * <p>
 	 * This function is simply a convenience method for
-	 * <code>addTo(IPreferenceNode, IPreferenceNode)</code>. Calling this
-	 * function is equivalent to calling <code>addTo(null, node)</code>.
+	 * {@link #add(IPreferenceNode, IPreferenceNode)}. Calling this function is
+	 * equivalent to calling {@link #add(IPreferenceNode, IPreferenceNode)}.
 	 * </p>
 	 * 
 	 * @param node
@@ -108,7 +108,7 @@ public interface IPreferenceManager {
 	 * @param child
 	 *            The child being added
 	 */
-	public void addTo(IPreferenceNode parent, IPreferenceNode child);
+	public void add(IPreferenceNode parent, IPreferenceNode child);
 
 	/**
 	 * Returns the root node of all root nodes.
@@ -118,7 +118,7 @@ public interface IPreferenceManager {
 	public IPreferenceNode getRoot();
 
 	/**
-	 * Adds a {@link ICurrentPageListener} to the list of listeners.
+	 * Adds the specified {@link ICurrentPageListener} to the list of listeners.
 	 * 
 	 * @param listener
 	 *            the listener
@@ -126,21 +126,12 @@ public interface IPreferenceManager {
 	public void addCurrentPageListener(ICurrentPageListener listener);
 
 	/**
-	 * Removes a {@link ICurrentPageListener} from the list of listeners.
+	 * Removes the specified {@link ICurrentPageListener} from the list of
+	 * listeners.
 	 * 
 	 * @param listener
 	 *            the listener
 	 */
 	public void removeCurrentPageListener(ICurrentPageListener listener);
 
-	/**
-	 * Registers a class with the preference manager to be searched for
-	 * {@link Preference} annotations.
-	 * 
-	 * @param container any class containing {@link Preference} annotations
-	 */
-	@SuppressWarnings("rawtypes")
-	public void registerPreferenceContainer(Class container);
-	
-	public void gatherAnnotations();
 }

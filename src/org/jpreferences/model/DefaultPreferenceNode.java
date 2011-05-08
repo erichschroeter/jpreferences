@@ -64,14 +64,11 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	/**
 	 * Creates a preference node without specifying any arguments.
 	 * 
-	 * @see {@link #DefaultPreferenceNode()}
+	 * @see #DefaultPreferenceNode(String, IPreferencePage, String)
 	 * @exception ConflictingIdentifierException
 	 *                if any of the sibling nodes have the same identifier
-	 * @exception NullPointerException
-	 *                if the <code>PreferencePage</code> is <code>null</code>
 	 */
-	public DefaultPreferenceNode() throws NullPointerException,
-			ConflictingIdentifierException {
+	public DefaultPreferenceNode() throws ConflictingIdentifierException {
 		this(null, null, null);
 	}
 
@@ -80,7 +77,8 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 * label.
 	 * 
 	 * 
-	 * @see {@link #DefaultPreferenceNode()}
+	 * @see #DefaultPreferenceNode(IPreferenceNode, String, IPreferencePage,
+	 *      String, Icon)
 	 * 
 	 * @param identifier
 	 *            a unique identifier among this node's siblings
@@ -90,12 +88,9 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 *            the label
 	 * @exception ConflictingIdentifierException
 	 *                if any of the sibling nodes have the same identifier
-	 * @exception NullPointerException
-	 *                if the <code>PreferencePage</code> is <code>null</code>
 	 */
 	public DefaultPreferenceNode(String identifier, IPreferencePage page,
-			String label) throws NullPointerException,
-			ConflictingIdentifierException {
+			String label) throws ConflictingIdentifierException {
 		this(null, identifier, page, label, null);
 	}
 
@@ -103,7 +98,8 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 * Creates a preference node specifying the identifier, preference page,
 	 * icon, and label.
 	 * 
-	 * @see {@link #DefaultPreferenceNode()}
+	 * @see #DefaultPreferenceNode(IPreferenceNode, String, IPreferencePage,
+	 *      String, Icon)
 	 * 
 	 * @param identifier
 	 *            a unique identifier among this node's siblings
@@ -115,12 +111,9 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 *            the icon
 	 * @exception ConflictingIdentifierException
 	 *                if any of the sibling nodes have the same identifier
-	 * @exception NullPointerException
-	 *                if the <code>PreferencePage</code> is <code>null</code>
 	 */
 	public DefaultPreferenceNode(String identifier, IPreferencePage page,
-			String label, Icon icon) throws NullPointerException,
-			ConflictingIdentifierException {
+			String label, Icon icon) throws ConflictingIdentifierException {
 		this(null, identifier, page, label, icon);
 	}
 
@@ -128,7 +121,8 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 * Creates a preference node specifying the identifier, preference page,
 	 * label, and parent node.
 	 * 
-	 * @see {@link #DefaultPreferenceNode()}
+	 * @see #DefaultPreferenceNode(IPreferenceNode, String, IPreferencePage,
+	 *      String, Icon)
 	 * 
 	 * @param parent
 	 *            the parent node
@@ -140,20 +134,16 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 *            the label
 	 * @exception ConflictingIdentifierException
 	 *                if any of the sibling nodes have the same identifier
-	 * @exception NullPointerException
-	 *                if the <code>PreferencePage</code> is <code>null</code>
 	 */
 	public DefaultPreferenceNode(IPreferenceNode parent, String identifier,
-			IPreferencePage page, String label) throws NullPointerException,
-			ConflictingIdentifierException {
+			IPreferencePage page, String label)
+			throws ConflictingIdentifierException {
 		this(parent, identifier, page, label, null);
 	}
 
 	/**
 	 * Creates a preference node specifying the identifier, preference page,
 	 * icon, label, and parent node.
-	 * 
-	 * @see {@link #DefaultPreferenceNode()}
 	 * 
 	 * @param parent
 	 *            the parent node
@@ -167,12 +157,10 @@ public class DefaultPreferenceNode implements IPreferenceNode {
 	 *            the icon
 	 * @exception ConflictingIdentifierException
 	 *                if any of the sibling nodes have the same identifier
-	 * @exception NullPointerException
-	 *                if the <code>PreferencePage</code> is <code>null</code>
 	 */
 	public DefaultPreferenceNode(IPreferenceNode parent, String identifier,
 			IPreferencePage page, String label, Icon icon)
-			throws NullPointerException, ConflictingIdentifierException {
+			throws ConflictingIdentifierException {
 		children = new Vector<IPreferenceNode>();
 		setParent(parent);
 		setIdentifier(identifier != null ? identifier : "");

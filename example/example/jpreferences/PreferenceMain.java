@@ -45,7 +45,7 @@ class PreferenceMain {
 			mgr.add(new DefaultPreferenceNode("default", examplePage,
 					"Default Page"));
 			mgr.add(parent);
-			mgr.addTo(parent, new DefaultPreferenceNode("child",
+			mgr.add(parent, new DefaultPreferenceNode("child",
 					new DefaultPreferencePage(mgr, "Child Node",
 							"This is a child preference page."), null));
 			mgr.add(new DefaultPreferenceNode("text", textFieldPage,
