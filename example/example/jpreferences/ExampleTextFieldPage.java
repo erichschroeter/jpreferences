@@ -10,14 +10,14 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.jpreferences.IPreferenceManager;
+import org.jpreferences.ui.PreferencePage;
 
 @SuppressWarnings("serial")
-public class ExampleTextFieldPreferencePage extends ExamplePreferencePage {
+public class ExampleTextFieldPage extends PreferencePage {
 
-	public ExampleTextFieldPreferencePage(IPreferenceManager manager,
+	public ExampleTextFieldPage(IPreferenceManager manager,
 			String title, String description) {
 		super(manager, title, description);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

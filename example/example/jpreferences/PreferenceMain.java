@@ -29,9 +29,9 @@ class PreferenceMain {
 
 		IPreferenceManager mgr = new DefaultPreferenceManager(store);
 
-		ExampleDefaultPage examplePage = new ExampleDefaultPage(mgr,
+		DefaultPreferencePage examplePage = new DefaultPreferencePage(mgr,
 				"Child title", "This is an example description");
-		ExampleTextFieldPreferencePage textFieldPage = new ExampleTextFieldPreferencePage(
+		ExampleTextFieldPage textFieldPage = new ExampleTextFieldPage(
 				mgr, "Text Fields", "Show a page populated with text fields");
 		ExampleMixedComponentsPage mixedFieldPage = new ExampleMixedComponentsPage(
 				mgr, "Mixed Fields",

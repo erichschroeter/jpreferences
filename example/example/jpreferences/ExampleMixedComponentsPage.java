@@ -12,14 +12,14 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import org.jpreferences.IPreferenceManager;
+import org.jpreferences.ui.PreferencePage;
 
 @SuppressWarnings("serial")
-public class ExampleMixedComponentsPage extends ExamplePreferencePage {
+public class ExampleMixedComponentsPage extends PreferencePage {
 
 	public ExampleMixedComponentsPage(IPreferenceManager manager, String title,
 			String description) {
 		super(manager, title, description);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -76,4 +76,5 @@ public class ExampleMixedComponentsPage extends ExamplePreferencePage {
 			}
 		}
 	}
+
 }
