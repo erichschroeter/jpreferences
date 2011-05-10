@@ -20,6 +20,7 @@ public class ExampleMixedComponentsPage extends PreferencePage {
 	public ExampleMixedComponentsPage(IPreferenceManager manager, String title,
 			String description) {
 		super(manager, title, description);
+		createContents();
 	}
 
 	@Override

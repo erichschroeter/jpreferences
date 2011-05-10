@@ -253,19 +253,24 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 */
 	@Override
 	public void setCurrentPage(String path) {
-		String[] ids = path.split("/");
-		IPreferenceNode node = getRoot();
-		for (String id : ids) {
-			for (int i = 0; i < node.getChildCount(); i++) {
-				IPreferenceNode child = (IPreferenceNode) node.getChildAt(i);
-				if (child.getIdentifier().equals(id)) {
-					node = child;
-					break;
+		if (path != null) {
+			String[] ids = path.split("/");
+			IPreferenceNode node = getRoot();
+			for (String id : ids) {
+				for (int i = 0; i < node.getChildCount(); i++) {
+					IPreferenceNode child = (IPreferenceNode) node
+							.getChildAt(i);
+					if (child.getIdentifier().equals(id)) {
+						node = child;
+						break;
+					}
 				}
 			}
-		}
-		if (node.getIdentifier().equals(ids[ids.length - 1])) {
-			setCurrentPage(node.getPage());
+			if (node.getIdentifier().equals(ids[ids.length - 1])) {
+				setCurrentPage(node.getPage());
+			}
+		} else {
+			setCurrentPage(getRoot().getPage());
 		}
 	}
 

@@ -18,6 +18,7 @@ public class ExampleTextFieldPage extends PreferencePage {
 	public ExampleTextFieldPage(IPreferenceManager manager,
 			String title, String description) {
 		super(manager, title, description);
+		createContents();
 	}
 
 	@Override

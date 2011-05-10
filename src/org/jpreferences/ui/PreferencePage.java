@@ -41,6 +41,10 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 	/**
 	 * Creates a <code>PreferencePage</code> object specifying the <i>title</i>,
 	 * and <i>description</i>.
+	 * <p>
+	 * It is recommended that {@link #createContents()} is called after calling
+	 * the super constructor.
+	 * </p>
 	 * 
 	 * @param manager
 	 * @param title
@@ -56,7 +60,6 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 		setManager(manager);
 		setTitle(title);
 		setDescription(description);
-		createContents();
 	}
 
 	//

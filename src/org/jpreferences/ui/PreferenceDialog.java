@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Arrays;
@@ -16,10 +17,12 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -134,6 +137,9 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 		setMinimumSize(new Dimension(400, 400));
 		// add a window listener to save the preferences when the dialog closes
 		addWindowListener(dialogWindowListener());
+		KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+		getRootPane().registerKeyboardAction(cancelActionListener(),
+				escapeStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		tree = new JTree(manager.getRoot());
 		manager.addCurrentPageListener(this);
@@ -372,6 +378,7 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 		currentPage = current;
 		pagePanel.add(currentPage.getContents(), pagePanelConstraints);
 		pack();
+		update(getGraphics());
 	}
 
 }

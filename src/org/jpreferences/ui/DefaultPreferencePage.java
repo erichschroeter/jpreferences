@@ -34,6 +34,7 @@ public class DefaultPreferencePage extends PreferencePage {
 	public DefaultPreferencePage(IPreferenceManager manager, String title,
 			String description) {
 		super(manager, title, description);
+		createContents();
 	}
 
 	@Override

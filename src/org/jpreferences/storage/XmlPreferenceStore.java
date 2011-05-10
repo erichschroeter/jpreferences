@@ -366,18 +366,16 @@ public class XmlPreferenceStore implements IPreferenceStore {
 
 	@Override
 	public boolean save() {
-		boolean success = true;
-		if (store != null && needsSaving()) {
-			try {
-				store.createNewFile();
-				FileOutputStream fos = new FileOutputStream(store);
-				success = save(fos);
-				fos.close();
-			} catch (FileNotFoundException e) {
-				success = false;
-			} catch (IOException e) {
-				success = false;
-			}
+		boolean success = false;
+		try {
+			store.createNewFile();
+			FileOutputStream fos = new FileOutputStream(store);
+			success = save(fos);
+			fos.close();
+		} catch (FileNotFoundException e) {
+			success = false;
+		} catch (IOException e) {
+			success = false;
 		}
 		return success;
 	}
@@ -386,36 +384,38 @@ public class XmlPreferenceStore implements IPreferenceStore {
 	@Override
 	public boolean save(OutputStream os) {
 		boolean success = true;
-		try {
-			ObjectFactory factory = new ObjectFactory();
+		if (needsSaving()) {
+			try {
+				ObjectFactory factory = new ObjectFactory();
 
-			Preferences preferencesElement = factory.createPreferences();
-			Preference preference;
+				Preferences preferencesElement = factory.createPreferences();
+				Preference preference;
 
-			Iterator keys = properties.entrySet().iterator();
-			while (keys.hasNext()) {
-				Entry set = (Entry) keys.next();
-				String id = (String) set.getKey();
-				String value = (String) set.getValue();
+				Iterator keys = properties.entrySet().iterator();
+				while (keys.hasNext()) {
+					Entry set = (Entry) keys.next();
+					String id = (String) set.getKey();
+					String value = (String) set.getValue();
 
-				preference = factory.createPreference();
-				preference.setId(id);
-				preference.setValue(value);
+					preference = factory.createPreference();
+					preference.setId(id);
+					preference.setValue(value);
 
-				preferencesElement.getPreference().add(preference);
+					preferencesElement.getPreference().add(preference);
+				}
+
+				JAXBContext context = JAXBContext
+						.newInstance("org.jpreferences.xml");
+				Marshaller m = context.createMarshaller();
+				m.setSchema(schema);
+				m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+				m.marshal(preferencesElement, os);
+
+				storeSaved();
+				success = true;
+			} catch (JAXBException e) {
+				success = false;
 			}
-
-			JAXBContext context = JAXBContext
-					.newInstance("org.jpreferences.xml");
-			Marshaller m = context.createMarshaller();
-			m.setSchema(schema);
-			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			m.marshal(preferencesElement, os);
-
-			storeSaved();
-			success = true;
-		} catch (JAXBException e) {
-			success = false;
 		}
 		return success;
 	}
@@ -437,24 +437,22 @@ public class XmlPreferenceStore implements IPreferenceStore {
 
 	@Override
 	public boolean load(InputStream is) {
-		boolean success = true;
-		if (store != null && store.exists()) {
-			try {
-				JAXBContext context = JAXBContext
-						.newInstance("org.jpreferences.xml");
-				Unmarshaller m = context.createUnmarshaller();
-				m.setSchema(schema);
+		boolean success = false;
+		try {
+			JAXBContext context = JAXBContext
+					.newInstance("org.jpreferences.xml");
+			Unmarshaller m = context.createUnmarshaller();
+			m.setSchema(schema);
 
-				Preferences preferencesElement = (Preferences) m.unmarshal(is);
+			Preferences preferencesElement = (Preferences) m.unmarshal(is);
 
-				for (Preference p : preferencesElement.getPreference()) {
-					createPreference(p.getId(), p.getValue());
-				}
-				storeHasChanged();
-				success = true;
-			} catch (JAXBException e) {
-				success = false;
+			for (Preference p : preferencesElement.getPreference()) {
+				createPreference(p.getId(), p.getValue());
 			}
+			storeHasChanged();
+			success = true;
+		} catch (JAXBException e) {
+			success = false;
 		}
 		return success;
 	}
