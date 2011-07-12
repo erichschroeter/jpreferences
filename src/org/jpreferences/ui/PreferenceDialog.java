@@ -120,7 +120,7 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	 *            preferences
 	 */
 	public PreferenceDialog(Window parent, IPreferenceManager manager) {
-		super(parent);
+		super(parent, ModalityType.DOCUMENT_MODAL);
 		this.manager = manager;
 		init();
 	}
@@ -139,6 +139,7 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	public static PreferenceDialog showDialog(Dialog parent,
 			IPreferenceManager manager) {
 		PreferenceDialog dialog = new PreferenceDialog(parent, manager);
+		dialog.setVisible(true);
 		return dialog;
 	}
 
@@ -156,6 +157,7 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	public static PreferenceDialog showDialog(Window parent,
 			IPreferenceManager manager) {
 		PreferenceDialog dialog = new PreferenceDialog(parent, manager);
+		dialog.setVisible(true);
 		return dialog;
 	}
 
@@ -392,8 +394,10 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 		pagePanel.remove(currentPage.getContents());
 		currentPage = current;
 		pagePanel.add(currentPage.getContents(), pagePanelConstraints);
-		pack();
-		update(getGraphics());
+		// display when first focused in tree
+		validate();
+		// repaint if already been focused
+		repaint();
 	}
 
 }

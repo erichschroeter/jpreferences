@@ -5,6 +5,7 @@ import java.util.prefs.Preferences;
 
 import org.jpreferences.model.DefaultPreferenceNode;
 import org.jpreferences.storage.ConflictingIdentifierException;
+import org.jpreferences.storage.DefaultPreferenceStore;
 import org.jpreferences.storage.IPreferenceStore;
 import org.jpreferences.ui.IPreferencePage;
 import org.jpreferences.model.IPreferenceNode;
@@ -70,11 +71,15 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	/**
 	 * Constructs a <code>DefaultPreferenceManager</code> specifying the
 	 * preferences to manage.
+	 * <p>
+	 * This is equivalent to
+	 * <code>DefaultPreferenceManager(new DefaultPreferenceStore(preferences))</code>.
 	 * 
 	 * @param preferences
+	 *            the preferences to manage
 	 */
 	public DefaultPreferenceManager(Preferences preferences) {
-		
+		this(new DefaultPreferenceStore(preferences));
 	}
 
 	/**
@@ -186,7 +191,7 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	/**
 	 * Returns the root node of all root nodes.
 	 * 
-	 * @return The master root node
+	 * @return the master root node
 	 */
 	@Override
 	public IPreferenceNode getRoot() {
@@ -199,10 +204,9 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 * This function is simply a convenience method for
 	 * {@link #add(IPreferenceNode, IPreferenceNode)}. Calling this function is
 	 * equivalent to calling <code>addTo(null, node)</code>.
-	 * </p>
 	 * 
 	 * @param node
-	 *            The new node
+	 *            the new node
 	 */
 	@Override
 	public void add(IPreferenceNode node) {
@@ -214,10 +218,11 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 * <code>IPreferenceNode</code>.
 	 * 
 	 * @param parent
-	 *            The parent to add the child to. If parent is <code>null</code>
-	 *            then the child is added to a default root node.
+	 *            the <code>parent</code> to add the <code>child</code> to. If
+	 *            parent is <code>null</code> then the child is added to a
+	 *            default root node.
 	 * @param child
-	 *            The child being added
+	 *            the child being added
 	 */
 	@Override
 	public void add(IPreferenceNode parent, IPreferenceNode child) {
