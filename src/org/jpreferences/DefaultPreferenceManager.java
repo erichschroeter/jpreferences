@@ -1,6 +1,7 @@
 package org.jpreferences;
 
 import java.util.Vector;
+import java.util.prefs.Preferences;
 
 import org.jpreferences.model.DefaultPreferenceNode;
 import org.jpreferences.storage.ConflictingIdentifierException;
@@ -64,6 +65,16 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 */
 	public DefaultPreferenceManager(IPreferenceNode root) {
 		this(root, null);
+	}
+
+	/**
+	 * Constructs a <code>DefaultPreferenceManager</code> specifying the
+	 * preferences to manage.
+	 * 
+	 * @param preferences
+	 */
+	public DefaultPreferenceManager(Preferences preferences) {
+		
 	}
 
 	/**
@@ -141,7 +152,7 @@ public class DefaultPreferenceManager implements IPreferenceManager {
 	 */
 	private void notifyCurrentPageListeners(IPreferencePage current) {
 		for (ICurrentPageListener l : currentListeners) {
-			l.handleCurrentPageChanged(current);
+			l.currentPageChanged(current);
 		}
 	}
 

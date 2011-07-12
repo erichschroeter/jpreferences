@@ -10,6 +10,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Arrays;
@@ -122,6 +123,40 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 		super(parent);
 		this.manager = manager;
 		init();
+	}
+
+	/**
+	 * Creates a <code>PreferenceDialog</code> to display the preferences being
+	 * managed by <code>manager</code>.
+	 * 
+	 * @param parent
+	 *            the parent dialog to use for modality
+	 * @param manager
+	 *            the manager of the preferences
+	 * @return the <code>PreferenceDialog</code> that was created and to be
+	 *         shown
+	 */
+	public static PreferenceDialog showDialog(Dialog parent,
+			IPreferenceManager manager) {
+		PreferenceDialog dialog = new PreferenceDialog(parent, manager);
+		return dialog;
+	}
+
+	/**
+	 * Creates a <code>PreferenceDialog</code> to display the preferences being
+	 * managed by <code>manager</code>.
+	 * 
+	 * @param parent
+	 *            the parent window to use for modality
+	 * @param manager
+	 *            the manager of the preferences
+	 * @return the <code>PreferenceDialog</code> that was created and to be
+	 *         shown
+	 */
+	public static PreferenceDialog showDialog(Window parent,
+			IPreferenceManager manager) {
+		PreferenceDialog dialog = new PreferenceDialog(parent, manager);
+		return dialog;
 	}
 
 	/**
@@ -300,23 +335,7 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	 *         closing.
 	 */
 	private WindowListener dialogWindowListener() {
-		return new WindowListener() {
-
-			@Override
-			public void windowOpened(WindowEvent e) {
-			}
-
-			@Override
-			public void windowIconified(WindowEvent e) {
-			}
-
-			@Override
-			public void windowDeiconified(WindowEvent e) {
-			}
-
-			@Override
-			public void windowDeactivated(WindowEvent e) {
-			}
+		return new WindowAdapter() {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -326,10 +345,6 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				currentPage.performCancel();
-			}
-
-			@Override
-			public void windowActivated(WindowEvent e) {
 			}
 		};
 	}
@@ -373,7 +388,7 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	//
 
 	@Override
-	public void handleCurrentPageChanged(IPreferencePage current) {
+	public void currentPageChanged(IPreferencePage current) {
 		pagePanel.remove(currentPage.getContents());
 		currentPage = current;
 		pagePanel.add(currentPage.getContents(), pagePanelConstraints);

@@ -5,13 +5,16 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
 import org.jpreferences.IPreferenceManager;
 import org.jpreferences.DefaultPreferenceManager;
 import org.jpreferences.model.DefaultPreferenceNode;
 import org.jpreferences.model.IPreferenceNode;
 import org.jpreferences.storage.ConflictingIdentifierException;
-import org.jpreferences.storage.DefaultPreferenceStore;
 import org.jpreferences.storage.IPreferenceStore;
+import org.jpreferences.storage.PropertiesPreferenceStore;
 import org.jpreferences.ui.DefaultPreferencePage;
 import org.jpreferences.ui.PreferenceDialog;
 
@@ -23,7 +26,7 @@ class PreferenceMain {
 	public PreferenceMain() throws NullPointerException,
 			ConflictingIdentifierException {
 
-		store = new DefaultPreferenceStore(new File("prefs.properties"),
+		store = new PropertiesPreferenceStore(new File("prefs.properties"),
 				"This file contains preference settings");
 		store.load();
 
@@ -70,7 +73,23 @@ class PreferenceMain {
 	 */
 	public static void main(String[] args) throws NullPointerException,
 			ConflictingIdentifierException {
-		new PreferenceMain();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					UIManager.setLookAndFeel(UIManager
+							.getSystemLookAndFeelClassName());
+				} catch (Exception exception) {
+					exception.printStackTrace();
+				}
+				try {
+					new PreferenceMain();
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+				} catch (ConflictingIdentifierException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	private WindowListener dialogWindowListener() {

@@ -10,5 +10,5 @@ public interface ICurrentPageListener {
 	 * @param current
 	 *            the current page
 	 */
-	public void handleCurrentPageChanged(IPreferencePage current);
+	public void currentPageChanged(IPreferencePage current);
 }

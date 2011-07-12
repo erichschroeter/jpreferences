@@ -1,21 +1,18 @@
 package org.jpreferences.storage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Vector;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 /**
- * The default preference store stores preferences in a Java properties file.
+ * The default preference store stores preferences using the Java
+ * {@link Preferences} object.
  * 
  * @author Erich Schroeter
  * @version 1.0
@@ -24,164 +21,96 @@ import java.util.Vector;
 public class DefaultPreferenceStore implements IPreferenceStore {
 
 	/** The preference mapping storage. */
-	private Properties properties;
+	private Preferences prefs;
 	/** The preference mapping storage for default values. */
-	private Properties defaults;
+	private Map<String, String> defaults;
 	/**
 	 * Indicates whether a value has been changed by <code>setToDefault()</code>
 	 * , <code>setDefault(String)</code>, or <code>setValue(String,T)</code>.
 	 * Initially <code>false</code>
 	 */
 	private boolean dirty = false;
-	/** The file in which all the preferences are saved. */
-	private File store;
-	/**
-	 * A description of the preferences stored in this store.
-	 * <p>
-	 * This value is written to the file when the store is saved.
-	 * </p>
-	 */
-	private String description;
 
 	/**
-	 * Creates an empty store that without specifying a file.
+	 * Constructs a default <code>DefaultPreferenceStore</code> using the user
+	 * root preferences.
+	 * <p>
+	 * This is equivalent to
+	 * <code>DefaultPreferenceStore(Preferences.userRoot())</code>.
 	 * 
-	 * Passes the <code>null</code> to {@link #DefaultPreferenceStore(File)}
-	 * constructor.
-	 * 
-	 * @see #DefaultPreferenceStore(File)
+	 * @see Preferences#userRoot()
+	 * @see #DefaultPreferenceStore(Preferences)
 	 */
 	public DefaultPreferenceStore() {
-		this((File) null);
+		this(Preferences.userRoot());
 	}
 
 	/**
-	 * Creates an empty store that loads and saves to the specified file.
+	 * Constructs a <code>DefaultPreferenceStore</code> specifying the
+	 * preferences to manage.
+	 * <p>
+	 * This is equivalent to
+	 * <code>DefaultPreferenceStore(preferences, new HashMap<String, String>())</code>.
 	 * 
-	 * Passes the <i>filename</i> to a new <code>File</code> instance calling
-	 * {@link #DefaultPreferenceStore(File)} constructor.
-	 * 
-	 * @see #DefaultPreferenceStore(File)
-	 * 
-	 * @param filename
-	 *            The file name of the store
+	 * @see #DefaultPreferenceStore(Preferences, Map)
+	 * @param preferences
+	 *            the preferences to manage
 	 */
-	public DefaultPreferenceStore(String filename) {
-		this(new File(filename));
+	public DefaultPreferenceStore(Preferences preferences) {
+		this(preferences, new HashMap<String, String>());
 	}
 
 	/**
-	 * Creates an empty store that loads and saves to the specified file.
+	 * Constructs a <code>DefaultPreferenceStore</code> specifying the
+	 * preferences to manage.
 	 * 
-	 * Calls {@link #DefaultPreferenceStore(File, String)} passing an empty
-	 * string as the <i>description</i>.
-	 * 
-	 * @see #DefaultPreferenceStore(File, String)
-	 * 
-	 * @param file
-	 *            The file of the store
-	 */
-	public DefaultPreferenceStore(File file) {
-		this(file, (String) null);
-	}
-
-	/**
-	 * Creates an empty store that loads and saves to the specified file.
-	 * 
-	 * Calls {@link #DefaultPreferenceStore(File, String, Properties)} passing
-	 * an empty {@link Properties} instance as the <i>defaults</i>.
-	 * 
-	 * @see #DefaultPreferenceStore(File, String, Properties)
-	 * 
-	 * @param file
-	 *            The file of the store
-	 * @param description
-	 *            A description of the preferences in this store. This
-	 *            description is written to the file as a header.
-	 */
-	public DefaultPreferenceStore(File file, String description) {
-		this(file, description, null);
-	}
-
-	/**
-	 * Creates an empty store that loads and saves to the specified file.
-	 * 
-	 * Calls {@link #DefaultPreferenceStore(File, String, Properties)} passing
-	 * an empty string as <i>description</i>.
-	 * 
-	 * @see #DefaultPreferenceStore(File, String, Properties)
-	 * 
-	 * @param file
-	 *            The file of the store
+	 * @param preferences
+	 *            the preferences to manage
 	 * @param defaults
-	 *            The default property values
+	 *            the default preferences
 	 */
-	public DefaultPreferenceStore(File file, Properties defaults) {
-		this(file, null, defaults);
+	public DefaultPreferenceStore(Preferences preferences,
+			Map<String, String> defaults) {
+		setDefaults(defaults);
+		setPreferences(preferences);
 	}
 
 	/**
-	 * Creates an empty store that loads and saves to the specified file.
+	 * Returns the default preferences this store manages.
 	 * 
-	 * @param file
-	 *            The file of the store
-	 * @param description
-	 *            A description of the preferences in this store. This
-	 *            description is written to the file as a header.
+	 * @return the default preferences
+	 */
+	public Map<String, String> getDefaults() {
+		return defaults;
+	}
+
+	/**
+	 * Sets the default preferences for this store.
+	 * 
 	 * @param defaults
-	 *            The default property values
+	 *            the default preferences to set
 	 */
-	public DefaultPreferenceStore(File file, String description,
-			Properties defaults) {
-		setFile(file);
-		setDescription(description);
-		properties = new Properties();
-		this.defaults = defaults != null ? defaults : new Properties();
-		load();
+	public void setDefaults(Map<String, String> defaults) {
+		this.defaults = defaults;
 	}
 
 	/**
-	 * Returns the description of this preference store.
+	 * Returns the reference to the preference container this store manages.
 	 * 
-	 * @see #description
-	 * @return the store's description
+	 * @return the preferences
 	 */
-	public String getDescription() {
-		return description;
+	public Preferences getPreferences() {
+		return prefs;
 	}
 
 	/**
-	 * Sets this store's description.
+	 * Sets the preferences for this store to manage.
 	 * 
-	 * @see #description
-	 * 
-	 * @param description
-	 *            a description of the preferences in this store
+	 * @param prefs
+	 *            the preferences to set
 	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	/**
-	 * Sets the file where preferences are stored.
-	 * 
-	 * @see #save()
-	 * 
-	 * @param file
-	 *            the file
-	 */
-	public void setFile(File file) {
-		store = file;
-		storeHasChanged();
-	}
-
-	/**
-	 * Returns the file which stores the preferences.
-	 * 
-	 * @return the file
-	 */
-	public File getFile() {
-		return store;
+	public void setPreferences(Preferences prefs) {
+		this.prefs = prefs;
 	}
 
 	/**
@@ -191,7 +120,7 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 * @see #save()
 	 * @see #save(OutputStream)
 	 */
-	private void storeHasChanged() {
+	protected void storeHasChanged() {
 		dirty = true;
 	}
 
@@ -202,7 +131,7 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 * @return <code>True</code> if the store needs to be saved,
 	 *         <code>False</code> if not
 	 */
-	private boolean needsSaving() {
+	protected boolean needsSaving() {
 		return dirty;
 	}
 
@@ -212,7 +141,7 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 * 
 	 * @see #save(OutputStream)
 	 */
-	private void storeSaved() {
+	protected void storeSaved() {
 		dirty = false;
 	}
 
@@ -232,49 +161,55 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 * default value is to call {@link #reset(String, String)}.
 	 * </p>
 	 * 
-	 * @see Properties#setProperty(String, String)
+	 * @see Preferences#put(String, String)
 	 * @param id
 	 *            the identifier
 	 * @param preference
 	 *            the preference to set
-	 * @return <code>True</code> if successful, else <code>False</code>
+	 * @return <code>true</code> if successful, else <code>false</code>
 	 */
 	public boolean createPreference(String id, String preference) {
-		properties.setProperty(id, preference);
+		boolean success = false;
+		try {
+			prefs.put(id, preference);
+			success = true;
+		} catch (NullPointerException e) {
+			success = false;
+		} catch (IllegalArgumentException e) {
+			success = false;
+		} catch (IllegalStateException e) {
+			success = false;
+		}
 		storeHasChanged();
-		return true;
+		return success;
 	}
 
 	/**
 	 * Reads and returns the preference associated with the given identifier in
 	 * the store.
 	 * 
-	 * @see Properties#getProperty(String)
+	 * @see Preferences#get(String, String)
 	 * @param id
 	 *            the identifier
-	 * @return the preference
+	 * @return the preference value
 	 */
 	public String readPreference(String id) {
-		String preference = null;
-		if ((preference = properties.getProperty(id)) == null) {
-			preference = defaults.getProperty(id);
-		}
-		return preference;
+		return prefs.get(id, null);
 	}
 
 	/**
 	 * Updates the preference associated with the specified identifier to the
 	 * given preference.
 	 * 
-	 * @see Properties#setProperty(String, String)
+	 * @see Preferences#put(String, String)
 	 * @param id
 	 *            the identifier
 	 * @param preference
-	 *            the preference
-	 * @return <code>True</code> if successful, else <code>False</code>
+	 *            the preference value
+	 * @return <code>true</code> if successful, else <code>false</code>
 	 */
 	public boolean updatePreference(String id, String preference) {
-		properties.setProperty(id, preference);
+		prefs.put(id, preference);
 		storeHasChanged();
 		return true;
 	}
@@ -282,14 +217,22 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	/**
 	 * Deletes the preference associated with the specified identifier.
 	 * 
-	 * @see Properties#remove(Object)
+	 * @see Preferences#remove(String)
 	 * @param id
 	 *            the identifier
-	 * @return <code>True</code> if successful, else <code>False</code>. If the
-	 *         <code>id</code> did not exist, <code>False</code> is returned.
+	 * @return <code>true</code> if successful, else <code>false</code>. If the
+	 *         <code>id</code> did not exist, <code>false</code> is returned.
 	 */
 	public boolean deletePreference(String id) {
-		boolean success = properties.remove(id) != null;
+		boolean success = false;
+		try {
+			prefs.remove(id);
+			success = true;
+		} catch (NullPointerException e) {
+			success = false;
+		} catch (IllegalStateException e) {
+			success = false;
+		}
 		storeHasChanged();
 		return success;
 	}
@@ -298,18 +241,18 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 * Returns the default value for the preference associated with the
 	 * specified identifier.
 	 * 
-	 * @see Properties#getProperty(String)
 	 * @param id
 	 *            the identifier
 	 * @return the default value
 	 */
 	public String getDefault(String id) {
-		return defaults.getProperty(id);
+		return defaults.get(id);
 	}
 
 	/**
 	 * Sets the preference associated with the given identifier back to its
-	 * default value.
+	 * default value. If the preference identified by <code>id</code> does not
+	 * have a default value registered with the store, nothing occurs.
 	 * 
 	 * @see #setDefault(String, String)
 	 * @param id
@@ -317,14 +260,13 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 */
 	public void reset(String id) {
 		if (defaults.containsKey(id)) {
-			properties.remove(id);
+			prefs.put(id, defaults.get(id));
 			storeHasChanged();
 		}
 	}
 
 	/**
-	 * Sets the default value for the preference associated with the given
-	 * identifier.
+	 * Sets the default value for the preference identified by <code>id</code>.
 	 * <p>
 	 * When {@link #reset(String)} is called, this is the value the preference
 	 * will be set to.
@@ -336,7 +278,7 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 *            the new default value for the preference
 	 */
 	public void setDefault(String id, String preference) {
-		defaults.setProperty(id, preference);
+		defaults.put(id, preference);
 	}
 
 	/**
@@ -345,16 +287,15 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 * 
 	 * @param name
 	 *            the name of the preference
-	 * @return <code>True</code> if the preference is the same as the default,
-	 *         else <code>False</code>
+	 * @return <code>true</code> if the preference is the same as the default,
+	 *         else <code>false</code>
 	 */
 	public boolean isDefault(String name) {
 		boolean isDefault = false;
 		if (name != null) {
-			if (properties.containsKey(name) && defaults.containsKey(name)) {
-				isDefault = properties.getProperty(name).equals(
-						defaults.getProperty(name));
-			} else if (properties.containsKey(name)
+			if ((prefs.get(name, null) != null) && defaults.containsKey(name)) {
+				isDefault = prefs.get(name, null).equals(defaults.get(name));
+			} else if ((prefs.get(name, null) != null)
 					|| defaults.containsKey(name)) {
 				isDefault = true;
 			}
@@ -367,10 +308,10 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 	 * 
 	 * @param name
 	 *            the name of the preference
-	 * @return <code>True</code> if it exists, else <code>False</code>
+	 * @return <code>true</code> if it exists, else <code>false</code>
 	 */
 	public boolean contains(String name) {
-		return properties.containsKey(name) || defaults.containsKey(name);
+		return (prefs.get(name, null) != null) || defaults.containsKey(name);
 	}
 
 	@Override
@@ -405,24 +346,28 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 
 	@Override
 	public ArrayList<String> toArrayList() {
-		ArrayList<String> list = new ArrayList<String>(properties.size());
-		Enumeration<Object> vals = properties.elements();
-		while (vals.hasMoreElements()) {
-			String value = (String) vals.nextElement();
-			list.add(value);
+		ArrayList<String> list = null;
+		try {
+			list = new ArrayList<String>(prefs.keys().length);
+			for (String id : prefs.keys()) {
+				list.add(prefs.get(id, null));
+			}
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
 		}
 		return list;
 	}
 
 	@Override
 	public HashMap<Object, String> toHashMap() {
-		HashMap<Object, String> map = new HashMap<Object, String>(
-				properties.size());
-		@SuppressWarnings("rawtypes")
-		Enumeration keys = properties.propertyNames();
-		while (keys.hasMoreElements()) {
-			String key = (String) keys.nextElement();
-			map.put(key, properties.getProperty(key));
+		HashMap<Object, String> map = null;
+		try {
+			map = new HashMap<Object, String>(prefs.keys().length);
+			for (String id : prefs.keys()) {
+				map.put(id, prefs.get(id, null));
+			}
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
 		}
 		return map;
 	}
@@ -432,77 +377,82 @@ public class DefaultPreferenceStore implements IPreferenceStore {
 		return new Vector<String>(getCollection());
 	}
 
+	/**
+	 * Attempts to return <code>Preferences.keys()</code>, but if an error
+	 * occurs <code>null</code> is returned.
+	 * 
+	 * @return the preference keys, or <code>null</code> if an error occurs
+	 */
 	@Override
 	public String[] getInventory() {
-		return properties.values().toArray(new String[properties.size()]);
+		try {
+			return prefs.keys();
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
+	/**
+	 * Attempts to return <code>Preferences.keys().length</code> but if an error
+	 * occurs -1 is returned.
+	 * 
+	 * @return the number of preferences in this store
+	 */
 	@Override
 	public int quantity() {
-		return properties.size();
+		try {
+			return prefs.keys().length;
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
+	/**
+	 * Returns <code>false</code>, because this store does not support loading
+	 * from a file.
+	 * 
+	 * @return <code>false</code>
+	 */
 	@Override
 	public boolean load() {
-		boolean success = false;
-		if (store != null && store.exists()) {
-			try {
-				FileInputStream is = new FileInputStream(store);
-				success = load(is);
-				is.close();
-			} catch (FileNotFoundException e) {
-				success = false;
-			} catch (IOException e) {
-				success = false;
-			}
-		}
-		return success;
+		return false;
 	}
 
+	/**
+	 * Returns <code>false</code>, because this store does not support loading
+	 * from a file.
+	 * 
+	 * @return <code>false</code>
+	 */
 	@Override
 	public boolean load(InputStream is) {
-		boolean success = false;
-		try {
-			properties.load(is);
-			storeHasChanged();
-			success = true;
-		} catch (IOException e) {
-			success = false;
-		}
-		return success;
+		return false;
 	}
 
+	/**
+	 * Returns <code>false</code>, because this store does not support saving to
+	 * a file. All preferences that are changed are saved automatically via the
+	 * {@link Preferences} object.
+	 * 
+	 * @return <code>false</code>
+	 */
 	@Override
 	public boolean save() {
-		boolean success = true;
-		if (store != null && needsSaving()) {
-			try {
-				store.createNewFile();
-				FileOutputStream fos = new FileOutputStream(store);
-				success = save(fos);
-				fos.close();
-			} catch (FileNotFoundException e) {
-				success = false;
-			} catch (IOException e) {
-				success = false;
-			}
-		}
-		return success;
+		return false;
 	}
 
+	/**
+	 * Returns <code>false</code>, because this store does not support saving to
+	 * a file. All preferences that are changed are saved automatically via the
+	 * {@link Preferences} object.
+	 * 
+	 * @return <code>false</code>
+	 */
 	@Override
 	public boolean save(OutputStream os) {
-		boolean success = true;
-		if (needsSaving()) {
-			try {
-				properties.store(os, getDescription());
-				storeSaved();
-				success = true;
-			} catch (IOException e) {
-				success = false;
-			}
-		}
-		return success;
+		return false;
 	}
 
 }
