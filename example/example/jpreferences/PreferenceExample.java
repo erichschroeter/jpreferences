@@ -8,60 +8,24 @@ import java.io.File;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.jpreferences.IPreferenceManager;
-import org.jpreferences.DefaultPreferenceManager;
-import org.jpreferences.model.DefaultPreferenceNode;
-import org.jpreferences.model.IPreferenceNode;
-import org.jpreferences.storage.ConflictingIdentifierException;
-import org.jpreferences.storage.IPreferenceStore;
-import org.jpreferences.storage.PropertiesPreferenceStore;
-import org.jpreferences.ui.DefaultPreferencePage;
-import org.jpreferences.ui.PreferenceDialog;
+import org.jpreferences.DefaultPreferencePage;
+import org.jpreferences.PreferenceDialog;
 
 class PreferenceMain {
 
-	IPreferenceStore store;
 	PreferenceDialog dlg;
 
-	public PreferenceMain() throws NullPointerException,
-			ConflictingIdentifierException {
+	public PreferenceMain() {
 
-		store = new PropertiesPreferenceStore(new File("prefs.properties"),
-				"This file contains preference settings");
-		store.load();
-
-		IPreferenceManager mgr = new DefaultPreferenceManager(store);
-
-		DefaultPreferencePage examplePage = new DefaultPreferencePage(mgr,
+		DefaultPreferencePage examplePage = new DefaultPreferencePage(
 				"Child title", "This is an example description");
 		ExampleTextFieldPage textFieldPage = new ExampleTextFieldPage(
-				mgr, "Text Fields", "Show a page populated with text fields");
+				"Text Fields", "Show a page populated with text fields");
 		ExampleMixedComponentsPage mixedFieldPage = new ExampleMixedComponentsPage(
-				mgr, "Mixed Fields",
+				"Mixed Fields",
 				"Show a page populated with a mix of field types");
 
-		IPreferenceNode parent = new DefaultPreferenceNode("parent",
-				new DefaultPreferencePage(mgr, null,
-						"This is a parent node page"), "Parent");
-
-		try {
-			mgr.add(new DefaultPreferenceNode("default", examplePage,
-					"Default Page"));
-			mgr.add(parent);
-			mgr.add(parent, new DefaultPreferenceNode("child",
-					new DefaultPreferencePage(mgr, "Child Node",
-							"This is a child preference page."), null));
-			mgr.add(new DefaultPreferenceNode("text", textFieldPage,
-					"Text Fields"));
-			mgr.add(new DefaultPreferenceNode("mixed", mixedFieldPage,
-					"Mixed Components"));
-		} catch (NullPointerException e) {
-			e.printStackTrace();
-		} catch (ConflictingIdentifierException e) {
-			e.printStackTrace();
-		}
-
-		dlg = new PreferenceDialog((Dialog) null, mgr);
+		dlg = new PreferenceDialog((Dialog) null);
 		dlg.addWindowListener(dialogWindowListener());
 		dlg.setVisible(true);
 	}
@@ -71,8 +35,7 @@ class PreferenceMain {
 	 * @throws ConflictingIdentifierException
 	 * @throws NullPointerException
 	 */
-	public static void main(String[] args) throws NullPointerException,
-			ConflictingIdentifierException {
+	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -84,8 +47,6 @@ class PreferenceMain {
 				try {
 					new PreferenceMain();
 				} catch (NullPointerException e) {
-					e.printStackTrace();
-				} catch (ConflictingIdentifierException e) {
 					e.printStackTrace();
 				}
 			}

@@ -15,13 +15,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 
-import org.jpreferences.DefaultPreferenceManager;
-import org.jpreferences.IPreferenceManager;
-import org.jpreferences.PreferencePageFactory;
-import org.jpreferences.model.DefaultPreferenceNode;
-import org.jpreferences.storage.ConflictingIdentifierException;
-import org.jpreferences.ui.IPreferencePage;
-import org.jpreferences.ui.PreferenceDialog;
+import org.jpreferences.IPreferencePage;
+import org.jpreferences.PreferenceDialog;
+
 
 public class PreferenceFactoryExample implements UserPreferences {
 
@@ -32,21 +28,8 @@ public class PreferenceFactoryExample implements UserPreferences {
 	 * the example.
 	 */
 	public PreferenceFactoryExample() {
-		final IPreferenceManager mgr = new DefaultPreferenceManager(
-				getPreferences());
-		// add the Preference pages
-		try {
-			mgr.add(new DefaultPreferenceNode("window",
-					createWindowPreferencePage(), "Window"));
-			mgr.add(new DefaultPreferenceNode("mixed",
-					new ExampleMixedComponentsPage(mgr, "Mixed",
-							"Mixed components"), "Mixed"));
-			mgr.add(new DefaultPreferenceNode("text", new ExampleTextFieldPage(
-					mgr, "Text", "Text components"), "Text"));
-		} catch (ConflictingIdentifierException e) {
-			e.printStackTrace();
-		}
-		PreferenceDialog dialog = new PreferenceDialog(null, mgr);
+		
+		PreferenceDialog dialog = new PreferenceDialog(null);
 		// save preferences when the dialog closes
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -91,117 +74,6 @@ public class PreferenceFactoryExample implements UserPreferences {
 	 */
 	public static Preferences getPreferences() {
 		return Preferences.userNodeForPackage(PreferenceFactoryExample.class);
-	}
-
-	/**
-	 * Creates a preference page for window preferences.
-	 * 
-	 * @return the Windows preference page
-	 */
-	private IPreferencePage createWindowPreferencePage() {
-		PreferencePageFactory factory = new PreferencePageFactory();
-		factory.addCheckboxEditorComponent("Maximized",
-				"Maximize the window in startup", PREFERENCE_WINDOW_MAXIMIZED,
-				new ActionListener() {
-
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						getPreferences().putBoolean(
-								PREFERENCE_WINDOW_MAXIMIZED,
-								((JCheckBox) e.getSource()).isSelected());
-					}
-				});
-		factory.addTextEditorComponent("Window Width",
-				"Customize the window width on startup",
-				PREFERENCE_WINDOW_SIZE_WIDTH, new DocumentListener() {
-
-					@Override
-					public void removeUpdate(DocumentEvent e) {
-					}
-
-					@Override
-					public void insertUpdate(DocumentEvent e) {
-						try {
-							getPreferences().put(PREFERENCE_WINDOW_SIZE_WIDTH,
-									e.getDocument().getText(0, e.getLength()));
-						} catch (BadLocationException e1) {
-							e1.printStackTrace();
-						}
-					}
-
-					@Override
-					public void changedUpdate(DocumentEvent e) {
-					}
-				});
-		factory.addTextEditorComponent("Window Height",
-				"Customize the window height on startup",
-				PREFERENCE_WINDOW_SIZE_HEIGHT, new DocumentListener() {
-
-					@Override
-					public void removeUpdate(DocumentEvent e) {
-					}
-
-					@Override
-					public void insertUpdate(DocumentEvent e) {
-						try {
-							getPreferences().put(PREFERENCE_WINDOW_SIZE_HEIGHT,
-									e.getDocument().getText(0, e.getLength()));
-						} catch (BadLocationException e1) {
-							e1.printStackTrace();
-						}
-					}
-
-					@Override
-					public void changedUpdate(DocumentEvent e) {
-					}
-				});
-		factory.addTextEditorComponent("Window Location X",
-				"Customize the window X location on startup",
-				PREFERENCE_WINDOW_LOCATION_X, new DocumentListener() {
-
-					@Override
-					public void removeUpdate(DocumentEvent e) {
-					}
-
-					@Override
-					public void insertUpdate(DocumentEvent e) {
-						try {
-							getPreferences().put(PREFERENCE_WINDOW_LOCATION_X,
-									e.getDocument().getText(0, e.getLength()));
-						} catch (BadLocationException e1) {
-							e1.printStackTrace();
-						}
-					}
-
-					@Override
-					public void changedUpdate(DocumentEvent e) {
-					}
-				});
-		factory.addTextEditorComponent("Window Location Y",
-				"Customize the window Y location on startup",
-				PREFERENCE_WINDOW_LOCATION_Y, new DocumentListener() {
-
-					@Override
-					public void removeUpdate(DocumentEvent e) {
-					}
-
-					@Override
-					public void insertUpdate(DocumentEvent e) {
-						try {
-							getPreferences().put(PREFERENCE_WINDOW_LOCATION_Y,
-									e.getDocument().getText(0, e.getLength()));
-						} catch (BadLocationException e1) {
-							e1.printStackTrace();
-						}
-
-					}
-
-					@Override
-					public void changedUpdate(DocumentEvent e) {
-					}
-				});
-		factory.addSection("Window");
-		return factory.getPage();
 	}
 
 	public static void main(String[] args) {

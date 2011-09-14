@@ -1,8 +1,6 @@
-package org.jpreferences.ui;
+package org.jpreferences;
 
 import javax.swing.JLabel;
-
-import org.jpreferences.IPreferenceManager;
 
 /**
  * A preference page which simply displays the
@@ -15,14 +13,13 @@ import org.jpreferences.IPreferenceManager;
 public class DefaultPreferencePage extends PreferencePage {
 
 	public DefaultPreferencePage() {
-		this(null, null, null);
+		this(null, null);
 	}
 
 	/**
 	 * Creates a <code>PreferencePage</code> object specifying the <i>title</i>,
 	 * and <i>description</i>.
 	 * 
-	 * @param manager
 	 * @param title
 	 *            The title. If value is <code>null</code> the <i>title</i>
 	 *            attribute is set to empty string ( <code>""</code>)
@@ -31,9 +28,8 @@ public class DefaultPreferencePage extends PreferencePage {
 	 *            <i>description</i> attribute is set to empty string (
 	 *            <code>""</code>)
 	 */
-	public DefaultPreferencePage(IPreferenceManager manager, String title,
-			String description) {
-		super(manager, title, description);
+	public DefaultPreferencePage(String title, String description) {
+		super(title, description);
 		createContents();
 	}
 

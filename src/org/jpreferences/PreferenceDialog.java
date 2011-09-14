@@ -1,4 +1,4 @@
-package org.jpreferences.ui;
+package org.jpreferences;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -15,6 +15,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Arrays;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -28,10 +29,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
-import org.jpreferences.ICurrentPageListener;
-import org.jpreferences.IPreferenceManager;
-import org.jpreferences.model.IPreferenceNode;
-
 /**
  * Provides a graphical interface for users to interact with preference pages.
  * From these preference pages, preferences may be updated.
@@ -41,7 +38,7 @@ import org.jpreferences.model.IPreferenceNode;
  * @created 02-May-2011 6:21:06 PM
  */
 @SuppressWarnings("serial")
-public class PreferenceDialog extends JDialog implements ICurrentPageListener {
+public class PreferenceDialog extends JDialog {
 
 	/**
 	 * Buttons available on the <code>PreferencePage</code>.
@@ -65,15 +62,11 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	}
 
 	/**
-	 * The object managing the <code>IPreferenceNode</code>'s which in turn
-	 * represent a corresponding <code>IPreferencePage</code>.
-	 */
-	private IPreferenceManager manager;
-	/**
 	 * The interface object the user interacts with to view properties from
 	 * different pages.
 	 */
 	private JTree tree;
+	private Preferences preferences;
 	/**
 	 * The <code>IPreferencePage</code> represented by the selected
 	 * <code>IPreferenceNode</code>. This value changes as the selected
@@ -98,13 +91,9 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	 * @param parent
 	 *            the <code>Dialog</code> from which the dialog is displayed or
 	 *            null if this dialog has no owner
-	 * @param manager
-	 *            the <code>PreferenceManager</code> that managing the
-	 *            preferences
 	 */
-	public PreferenceDialog(Dialog parent, IPreferenceManager manager) {
+	public PreferenceDialog(Dialog parent) {
 		super(parent, true);
-		this.manager = manager;
 		init();
 	}
 
@@ -115,50 +104,10 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	 * @param parent
 	 *            the <code>Window</code> from which the dialog is displayed or
 	 *            null if this dialog has no owner
-	 * @param manager
-	 *            the <code>PreferenceManager</code> that managing the
-	 *            preferences
 	 */
-	public PreferenceDialog(Window parent, IPreferenceManager manager) {
+	public PreferenceDialog(Window parent) {
 		super(parent, ModalityType.DOCUMENT_MODAL);
-		this.manager = manager;
 		init();
-	}
-
-	/**
-	 * Creates a <code>PreferenceDialog</code> to display the preferences being
-	 * managed by <code>manager</code>.
-	 * 
-	 * @param parent
-	 *            the parent dialog to use for modality
-	 * @param manager
-	 *            the manager of the preferences
-	 * @return the <code>PreferenceDialog</code> that was created and to be
-	 *         shown
-	 */
-	public static PreferenceDialog showDialog(Dialog parent,
-			IPreferenceManager manager) {
-		PreferenceDialog dialog = new PreferenceDialog(parent, manager);
-		dialog.setVisible(true);
-		return dialog;
-	}
-
-	/**
-	 * Creates a <code>PreferenceDialog</code> to display the preferences being
-	 * managed by <code>manager</code>.
-	 * 
-	 * @param parent
-	 *            the parent window to use for modality
-	 * @param manager
-	 *            the manager of the preferences
-	 * @return the <code>PreferenceDialog</code> that was created and to be
-	 *         shown
-	 */
-	public static PreferenceDialog showDialog(Window parent,
-			IPreferenceManager manager) {
-		PreferenceDialog dialog = new PreferenceDialog(parent, manager);
-		dialog.setVisible(true);
-		return dialog;
 	}
 
 	/**
@@ -178,9 +127,8 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 		getRootPane().registerKeyboardAction(cancelActionListener(),
 				escapeStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-		tree = new JTree(manager.getRoot());
-		manager.addCurrentPageListener(this);
-		currentPage = manager.getCurrentPage();
+//		tree = new JTree(preferences);
+//		currentPage = manager.getCurrentPage();
 
 		GridBagConstraints c;
 
@@ -251,7 +199,7 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	 *            the new page to display
 	 */
 	public void changePageTo(IPreferencePage page) {
-		manager.setCurrentPage(page);
+//		manager.setCurrentPage(page);
 	}
 
 	/**
@@ -259,22 +207,7 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 	 * @param path
 	 */
 	public void openPage(String path) {
-		manager.setCurrentPage(path);
-	}
-
-	/**
-	 * Returns the <code>IPreferenceNode</code> selected in the
-	 * <code>JTree</code>.
-	 * <p>
-	 * Uses <code>TreePath.getSelectionPath().getLastPathComponent()</code> to
-	 * retrieve the <code>TreeNode</code> and casts the result to
-	 * <code>IPreferenceNode</code>.
-	 * </p>
-	 * 
-	 * @return The selected node
-	 */
-	public IPreferenceNode getSelectedNode() {
-		return (IPreferenceNode) tree.getSelectionPath().getLastPathComponent();
+//		manager.setCurrentPage(path);
 	}
 
 	/**
@@ -324,9 +257,9 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-				IPreferenceNode node = (IPreferenceNode) e.getPath()
-						.getLastPathComponent();
-				changePageTo(node.getPage());
+//				IPreferenceNode node = (IPreferenceNode) e.getPath()
+//						.getLastPathComponent();
+//				changePageTo(node.getPage());
 			}
 		};
 	}
@@ -383,21 +316,6 @@ public class PreferenceDialog extends JDialog implements ICurrentPageListener {
 				currentPage.performDefault();
 			}
 		};
-	}
-
-	//
-	// ICurrentPageListener members
-	//
-
-	@Override
-	public void currentPageChanged(IPreferencePage current) {
-		pagePanel.remove(currentPage.getContents());
-		currentPage = current;
-		pagePanel.add(currentPage.getContents(), pagePanelConstraints);
-		// display when first focused in tree
-		validate();
-		// repaint if already been focused
-		repaint();
 	}
 
 }

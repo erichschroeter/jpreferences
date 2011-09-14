@@ -1,10 +1,8 @@
-package org.jpreferences.ui;
+package org.jpreferences;
 
 import java.awt.Component;
 
 import javax.swing.JPanel;
-
-import org.jpreferences.IPreferenceManager;
 
 /**
  * A <code>PreferencePage</code> implements the basic mundane methods provided
@@ -32,11 +30,6 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 	 * Text describing what is on the preference page.
 	 */
 	protected String description;
-	/**
-	 * The <code>IPreferenceManager</code> which manages the preferences for
-	 * which this page displays.
-	 */
-	protected IPreferenceManager manager;
 
 	/**
 	 * Creates a <code>PreferencePage</code> object specifying the <i>title</i>,
@@ -46,7 +39,6 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 	 * the super constructor.
 	 * </p>
 	 * 
-	 * @param manager
 	 * @param title
 	 *            The title. If value is <code>null</code> the <i>title</i>
 	 *            attribute is set to empty string ( <code>""</code>)
@@ -55,9 +47,8 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 	 *            <i>description</i> attribute is set to empty string (
 	 *            <code>""</code>)
 	 */
-	public PreferencePage(IPreferenceManager manager, String title,
+	public PreferencePage(String title,
 			String description) {
-		setManager(manager);
 		setTitle(title);
 		setDescription(description);
 	}
@@ -65,16 +56,6 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 	//
 	// IPreferencePage members
 	//
-
-	@Override
-	public void setManager(IPreferenceManager manager) {
-		this.manager = manager;
-	}
-
-	@Override
-	public IPreferenceManager getManager() {
-		return manager;
-	}
 
 	@Override
 	public void setTitle(String title) {
@@ -104,9 +85,6 @@ public abstract class PreferencePage extends JPanel implements IPreferencePage {
 	@Override
 	public boolean performOk() {
 		boolean saved = false;
-		if (manager != null) {
-			saved = manager.getStore().save();
-		}
 		return saved;
 	}
 

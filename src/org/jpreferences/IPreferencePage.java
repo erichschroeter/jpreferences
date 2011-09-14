@@ -1,8 +1,6 @@
-package org.jpreferences.ui;
+package org.jpreferences;
 
 import java.awt.Component;
-
-import org.jpreferences.IPreferenceManager;
 
 /**
  * A preference page displays graphical interface components as a frontend to a
@@ -14,22 +12,6 @@ import org.jpreferences.IPreferenceManager;
  * @created 02-May-2011 6:21:06 PM
  */
 public interface IPreferencePage {
-
-	/**
-	 * Sets the preference manager managing the preferences being displayed on
-	 * this page.
-	 * 
-	 * @param manager
-	 *            the manager
-	 */
-	public void setManager(IPreferenceManager manager);
-
-	/**
-	 * Returns the manager managing the preference pages.
-	 * 
-	 * @return the manager
-	 */
-	public IPreferenceManager getManager();
 
 	/**
 	 * Sets the preference page title.

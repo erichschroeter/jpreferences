@@ -9,15 +9,14 @@ import java.util.Random;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.jpreferences.IPreferenceManager;
-import org.jpreferences.ui.PreferencePage;
+import org.jpreferences.PreferencePage;
 
 @SuppressWarnings("serial")
 public class ExampleTextFieldPage extends PreferencePage {
 
-	public ExampleTextFieldPage(IPreferenceManager manager,
+	public ExampleTextFieldPage(
 			String title, String description) {
-		super(manager, title, description);
+		super(title, description);
 		createContents();
 	}
 
