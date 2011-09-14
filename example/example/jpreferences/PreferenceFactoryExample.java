@@ -29,7 +29,7 @@ public class PreferenceFactoryExample implements UserPreferences {
 	 */
 	public PreferenceFactoryExample() {
 		
-		PreferenceDialog dialog = new PreferenceDialog(null);
+		PreferenceDialog dialog = new PreferenceDialog(null, null);
 		// save preferences when the dialog closes
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override

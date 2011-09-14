@@ -1,5 +1,6 @@
 package org.jpreferences;
 
+import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -15,19 +16,29 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Arrays;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+
+import org.jpreferences.utils.PrefUtils;
 
 /**
  * Provides a graphical interface for users to interact with preference pages.
@@ -41,48 +52,12 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 public class PreferenceDialog extends JDialog {
 
 	/**
-	 * Buttons available on the <code>PreferencePage</code>.
-	 * <p>
-	 * TODO implement feature to add new Buttons (ex: addButton(JButton))
-	 * </p>
-	 * 
-	 * @author Erich Schroeter
-	 * @version 1.0
-	 * @created 02-May-2011 6:21:06 PM
-	 */
-	public enum Buttons {
-		/**
-		 * save the changed preferences
-		 */
-		OK,
-		/**
-		 * do not save the changed preferences
-		 */
-		CANCEL, DEFAULTS
-	}
-
-	/**
 	 * The interface object the user interacts with to view properties from
 	 * different pages.
 	 */
 	private JTree tree;
+	private JTable editTable;
 	private Preferences preferences;
-	/**
-	 * The <code>IPreferencePage</code> represented by the selected
-	 * <code>IPreferenceNode</code>. This value changes as the selected
-	 * <code>IPreferenceNode</code> changes.
-	 */
-	private IPreferencePage currentPage;
-	/**
-	 * The <code>JPanel</code> that displays the current
-	 * <code>PreferencePage</code>.
-	 */
-	private JPanel pagePanel;
-
-	private static final GridBagConstraints pagePanelConstraints = new GridBagConstraints(
-			0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST,
-			GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0);
-	protected Buttons buttons;
 
 	/**
 	 * Creates a <code>PreferenceDialog</code> calling {@link JDialog(Dialog,
@@ -92,8 +67,9 @@ public class PreferenceDialog extends JDialog {
 	 *            the <code>Dialog</code> from which the dialog is displayed or
 	 *            null if this dialog has no owner
 	 */
-	public PreferenceDialog(Dialog parent) {
+	public PreferenceDialog(Dialog parent, Preferences preferences) {
 		super(parent, true);
+		setPreferences(preferences);
 		init();
 	}
 
@@ -105,8 +81,9 @@ public class PreferenceDialog extends JDialog {
 	 *            the <code>Window</code> from which the dialog is displayed or
 	 *            null if this dialog has no owner
 	 */
-	public PreferenceDialog(Window parent) {
+	public PreferenceDialog(Window parent, Preferences preferences) {
 		super(parent, ModalityType.DOCUMENT_MODAL);
+		setPreferences(preferences);
 		init();
 	}
 
@@ -118,23 +95,40 @@ public class PreferenceDialog extends JDialog {
 	 * <code>IPreferenceNode</code>.
 	 */
 	private void init() {
-		setLayout(new GridBagLayout());
+		setLayout(new BorderLayout());
 		setTitle("Preferences Dialog");
 		setMinimumSize(new Dimension(400, 400));
-		// add a window listener to save the preferences when the dialog closes
-		addWindowListener(dialogWindowListener());
+
+		loadTestData(preferences);
+		try {
+			System.out.println(Arrays.toString(preferences.keys()));
+		} catch (BackingStoreException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		ActionListener closeAction = new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		};
+		// bind Escape key to close the dialog
 		KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-		getRootPane().registerKeyboardAction(cancelActionListener(),
-				escapeStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+		getRootPane().registerKeyboardAction(closeAction, escapeStroke,
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-//		tree = new JTree(preferences);
-//		currentPage = manager.getCurrentPage();
-
-		GridBagConstraints c;
+		//
+		// Edit Table
+		//
+		editTable = new JTable();
 
 		//
 		// TreePanel -- panel containing the tree hierarchy
 		//
+		tree = createTree(true, false, getPreferences());
 		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
 		renderer.setOpenIcon(null);
 		renderer.setLeafIcon(null);
@@ -142,180 +136,143 @@ public class PreferenceDialog extends JDialog {
 
 		tree.setCellRenderer(renderer);
 		tree.setBorder(BorderFactory.createLoweredBevelBorder());
-		tree.addTreeSelectionListener(pageTreeSelectionListener());
 
-		c = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
-				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
-				new Insets(2, 2, 2, 2), 0, 0);
-		JPanel treePanel = new JPanel(new GridBagLayout());
-		treePanel.add(tree, c);
+		// Buttons
 
-		//
-		// PagePanel
-		//
-		pagePanel = new JPanel(new GridBagLayout());
-		pagePanel.add(currentPage.getContents(), pagePanelConstraints);
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JButton closeButton = new JButton("Close");
+		closeButton.addActionListener(closeAction);
+		buttonPanel.add(closeButton);
 
-		// Buttons (i.e. OK, Cancel, Defaults)
-		JPanel buttonPanel = generateButtons(new Buttons[] { Buttons.OK,
-				Buttons.CANCEL, Buttons.DEFAULTS });
-		c = new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0,
-				GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-				new Insets(2, 2, 2, 2), 0, 0);
-		pagePanel.add(buttonPanel, c);
-		JButton okButton = (JButton) buttonPanel.getComponent(0);
-		okButton.addActionListener(okActionListener());
-		JButton cancelButton = (JButton) buttonPanel.getComponent(1);
-		cancelButton.addActionListener(cancelActionListener());
-		JButton defaultButton = (JButton) buttonPanel.getComponent(2);
-		defaultButton.addActionListener(defaultActionListener());
-
-		//
-		// add both of the main panels to this JDialog
-		//
-		c = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
-				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
-				new Insets(2, 2, 2, 2), 0, 0);
-		add(treePanel, c);
-		c = new GridBagConstraints(1, 0, 1, 1, 1.0, 1.0,
-				GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
-				new Insets(2, 2, 2, 2), 0, 0);
-		add(new JScrollPane(pagePanel), c);
+		JSplitPane splitPane = new JSplitPane();
+		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setLeftComponent(new JScrollPane(tree));
+		splitPane.setRightComponent(new JScrollPane(editTable));
+		add(splitPane, BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.SOUTH);
 
 		pack();
-		setLocationRelativeTo(getParent());
 	}
 
-	/**
-	 * Handles displaying the given page.
-	 * <p>
-	 * This function removes the <i>currentPage</i> <code>Component</code> from
-	 * <i>pagePanel</i> and adds the given <code>IPreferencePage</code> to
-	 * <i>pagePanel</i>. After adding the newly selected page to the panel, it
-	 * then calls <code>JPanel.updateUI()<code>.
-	 * </p>
-	 * 
-	 * @param page
-	 *            the new page to display
-	 */
-	public void changePageTo(IPreferencePage page) {
-//		manager.setCurrentPage(page);
-	}
-
-	/**
-	 * 
-	 * @param path
-	 */
-	public void openPage(String path) {
-//		manager.setCurrentPage(path);
-	}
-
-	/**
-	 * Generates a <code>JPanel</code> object with the specified buttons. A
-	 * <code>FlowLayout</code> is used to layout the buttons. Instances of
-	 * <code>JButton</code> are created for each
-	 * <code>Buttons<code> specified in the array.
-	 * 
-	 * @return <code>JPanel</code> with specified buttons.
-	 * 
-	 * @param buttons
-	 */
-	protected JPanel generateButtons(Buttons[] buttons) {
-		JPanel panel = new JPanel(new FlowLayout());
-		List<Buttons> list = Arrays.asList(buttons);
-
-		if (list.contains(Buttons.OK)) {
-			JButton button = new JButton("OK");
-			button.setName(button.getText().toLowerCase());
-			button.setToolTipText("Save the changes made on this page");
-			panel.add(button);
+	private void loadTestData(Preferences p) {
+		p.put("test String", "hello world");
+		p.putBoolean("test Boolean", true);
+		p.putDouble("test Double", 3.14159);
+		p.putInt("test Integer", 7);
+		try {
+			preferences.sync();
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
 		}
-		if (list.contains(Buttons.CANCEL)) {
-			JButton button = new JButton("Cancel");
-			button.setName(button.getText().toLowerCase());
-			button.setToolTipText("Ignore the intended changes made on this page");
-			panel.add(button);
-		}
-		if (list.contains(Buttons.DEFAULTS)) {
-			JButton button = new JButton("Defaults");
-			button.setName(button.getText().toLowerCase());
-			button.setToolTipText("Restores the default values for this page");
-			panel.add(button);
-		}
-
-		return panel;
 	}
 
 	/**
-	 * @return an <code>TreeSelectionListener</code> which handles casting the
-	 *         selected path's <code>Component</code> to a
-	 *         <code>PreferencePage</code> and passing it to
-	 *         <code>{@link PreferenceDialog#changePageTo(IPreferencePage)</code>
+	 * @return the preferences
 	 */
-	private TreeSelectionListener pageTreeSelectionListener() {
-		return new TreeSelectionListener() {
+	public Preferences getPreferences() {
+		return preferences;
+	}
+
+	/**
+	 * @param preferences
+	 *            the preferences to set
+	 */
+	public void setPreferences(Preferences preferences) {
+		this.preferences = preferences;
+	}
+
+	/**
+	 * Creates and returns a <code>JTree</code> containing tree nodes for each
+	 * <code>Preferences</code> specified.
+	 * 
+	 * @param userPreferences
+	 *            <code>true</code> to add the nodes for user preferences, or
+	 *            <code>false</code> not to
+	 * @param systemPreferences
+	 *            <code>true</code> to add the nodes for system preferences, or
+	 *            <code>false</code> not to
+	 * @param preferences
+	 *            the objects containing preferences to add to the tree
+	 * @return the preference tree created
+	 */
+	protected JTree createTree(boolean userPreferences,
+			boolean systemPreferences, Preferences... preferences) {
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode("Preferences");
+		for (Preferences node : preferences) {
+			if (userPreferences) {
+				root.add(createUserRootNode(node));
+			}
+			if (systemPreferences) {
+				root.add(createSystemRootNode(node));
+			}
+		}
+		DefaultTreeModel model = new DefaultTreeModel(root);
+		JTree tree = new JTree(model);
+		tree.addTreeSelectionListener(new TreeSelectionListener() {
 
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-//				IPreferenceNode node = (IPreferenceNode) e.getPath()
-//						.getLastPathComponent();
-//				changePageTo(node.getPage());
+				try {
+					PrefTreeNode node = (PrefTreeNode) e.getPath()
+							.getLastPathComponent();
+					Preferences pref = node.getPrefObject();
+					editTable.setModel(new PrefTableModel(pref));
+				} catch (ClassCastException ce) {
+					// System.out.println("Node not PrefTreeNode!");
+					editTable.setModel(new DefaultTableModel());
+				}
 			}
-		};
+		});
+		return tree;
 	}
 
 	/**
-	 * @return an <code>WindowListener</code> which handles calling the current
-	 *         page's <code>performCancel()</code> function when the window is
-	 *         closing.
+	 * Creates and returns a <code>MutableTreeNode</code> for the
+	 * <code>obj</code> in the system preferences space.
+	 * 
+	 * @param preference
+	 *            the object containing preferences (passed to
+	 *            {@link Preferences#systemNodeForPackage(Class)}
+	 * @return a new tree node based on the specified <code>obj</code>
 	 */
-	private WindowListener dialogWindowListener() {
-		return new WindowAdapter() {
-
-			@Override
-			public void windowClosing(WindowEvent e) {
-				currentPage.performCancel();
+	protected MutableTreeNode createSystemRootNode(Preferences preference) {
+		MutableTreeNode node = null;
+		try {
+			if (preference == null) {
+				node = new PrefTreeNode(Preferences.systemRoot());
+			} else {
+				node = new PrefTreeNode(preference);
 			}
-
-			@Override
-			public void windowClosed(WindowEvent e) {
-				currentPage.performCancel();
-			}
-		};
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
+			node = new DefaultMutableTreeNode("No System Preferences!");
+		}
+		return node;
 	}
 
-	private ActionListener okActionListener() {
-		return new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentPage.performOk();
-				setVisible(false);
-				dispose();
+	/**
+	 * Creates and returns a <code>MutableTreeNode</code> for the
+	 * <code>obj</code> in the user preferences space.
+	 * 
+	 * @param preference
+	 *            the object containing preferences (passed to
+	 *            {@link Preferences#userNodeForPackage(Class)}
+	 * @return a new tree node based on the specified <code>obj</code>
+	 */
+	protected MutableTreeNode createUserRootNode(Preferences preference) {
+		MutableTreeNode node = null;
+		try {
+			if (preference == null) {
+				node = new PrefTreeNode(Preferences.userRoot());
+			} else {
+				node = new PrefTreeNode(preference);
 			}
-		};
-	}
-
-	private ActionListener cancelActionListener() {
-		return new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentPage.performCancel();
-				setVisible(false);
-				dispose();
-			}
-		};
-	}
-
-	private ActionListener defaultActionListener() {
-		return new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentPage.performDefault();
-			}
-		};
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
+			node = new DefaultMutableTreeNode("No User Preferences!");
+		}
+		return node;
 	}
 
 }
