@@ -15,7 +15,7 @@ import org.jpreferences.PreferenceDialog;
  * 
  * @author Erich Schroeter
  */
-class PreferenceExample {
+class SimpleDialogExample {
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -30,7 +30,7 @@ class PreferenceExample {
 				JFrame frame = new JFrame();
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-				Preferences prefs = Preferences.userRoot().node("Magnetek").node("E-Force HMI");
+				Preferences prefs = Preferences.userRoot().node("preference-dialog");
 				prefs.putInt("number of states", 50);
 				prefs.putDouble("pi", 3.14159);
 				prefs.put("name", "Erich Schroeter");
