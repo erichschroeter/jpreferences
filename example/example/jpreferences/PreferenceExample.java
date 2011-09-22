@@ -10,6 +10,11 @@ import javax.swing.UIManager;
 
 import org.jpreferences.PreferenceDialog;
 
+/**
+ * An example showing the simple usage of {@link PreferenceDialog}.
+ * 
+ * @author Erich Schroeter
+ */
 class PreferenceExample {
 
 	public static void main(String[] args) {
@@ -25,9 +30,14 @@ class PreferenceExample {
 				JFrame frame = new JFrame();
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-				Preferences prefs = Preferences.userRoot();
+				Preferences prefs = Preferences.userRoot().node("Magnetek").node("E-Force HMI");
+				prefs.putInt("number of states", 50);
+				prefs.putDouble("pi", 3.14159);
+				prefs.put("name", "Erich Schroeter");
+				prefs.put("test", "test");
 
-				PreferenceDialog dlg = new PreferenceDialog(frame, prefs);
+				PreferenceDialog dlg = new PreferenceDialog(frame, prefs,
+						Preferences.userRoot(), Preferences.systemRoot());
 				dlg.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowClosing(WindowEvent e) {
@@ -39,6 +49,7 @@ class PreferenceExample {
 						System.exit(0);
 					}
 				});
+				dlg.setLocationRelativeTo(null);
 				dlg.setVisible(true);
 			}
 		});

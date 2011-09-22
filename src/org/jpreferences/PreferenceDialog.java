@@ -4,41 +4,34 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import javax.swing.BorderFactory;
+import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-
-import org.jpreferences.utils.PrefUtils;
 
 /**
  * Provides a graphical interface for users to interact with preference pages.
@@ -51,61 +44,102 @@ import org.jpreferences.utils.PrefUtils;
 @SuppressWarnings("serial")
 public class PreferenceDialog extends JDialog {
 
-	/**
-	 * The interface object the user interacts with to view properties from
-	 * different pages.
-	 */
+	/** The preference node tree the user interacts with to view preferences. */
 	private JTree tree;
+	/** The table displaying the preferences and their values. */
 	private JTable editTable;
-	private Preferences preferences;
+	/** The root preference nodes to be displayed in the {@link #tree}. */
+	private Preferences[] preferences;
+	/** The configuration used to control the features in the dialog. */
+	private Configuration config;
+
+	// TODO implement search for preferences and values
 
 	/**
-	 * Creates a <code>PreferenceDialog</code> calling {@link JDialog(Dialog,
-	 * boolean)}.
+	 * Creates a <code>PreferenceDialog</code> calling
+	 * {@link JDialog#JDialog(Dialog, boolean)}.
 	 * 
 	 * @param parent
 	 *            the <code>Dialog</code> from which the dialog is displayed or
-	 *            null if this dialog has no owner
+	 *            <code>null</code> if this dialog has no owner
+	 * @param preferences
+	 *            the root preference nodes
 	 */
-	public PreferenceDialog(Dialog parent, Preferences preferences) {
+	public PreferenceDialog(Dialog parent, Preferences... preferences) {
+		this(parent, null, preferences);
+	}
+
+	/**
+	 * Creates a <code>PreferenceDialog</code> calling
+	 * {@link JDialog#JDialog(Dialog, boolean)}.
+	 * 
+	 * @param parent
+	 *            the <code>Dialog</code> from which the dialog is displayed or
+	 *            <code>null</code> if this dialog has no owner
+	 * @param conf
+	 *            the configuration
+	 * @param preferences
+	 *            the root preference nodes
+	 */
+	public PreferenceDialog(Dialog parent, Configuration conf,
+			Preferences... preferences) {
 		super(parent, true);
+		config = conf != null ? conf : new Configuration();
 		setPreferences(preferences);
 		init();
 	}
 
 	/**
-	 * Creates a <code>PreferenceDialog</code> calling {@link JDialog(Window,
-	 * boolean)}.
+	 * Creates a <code>PreferenceDialog</code> calling
+	 * {@link JDialog#JDialog(Window, boolean)}.
 	 * 
 	 * @param parent
 	 *            the <code>Window</code> from which the dialog is displayed or
-	 *            null if this dialog has no owner
+	 *            <code>null</code> if this dialog has no owner
+	 * @param conf
+	 *            the configuration
+	 * @param preferences
+	 *            the root preference nodes
 	 */
-	public PreferenceDialog(Window parent, Preferences preferences) {
+	public PreferenceDialog(Window parent, Preferences... preferences) {
+		this(parent, null, preferences);
+	}
+
+	/**
+	 * Creates a <code>PreferenceDialog</code> calling
+	 * {@link JDialog#JDialog(Window, boolean)}.
+	 * 
+	 * @param parent
+	 *            the <code>Window</code> from which the dialog is displayed or
+	 *            <code>null</code> if this dialog has no owner
+	 * @param conf
+	 *            the configuration
+	 * @param preferences
+	 *            the root preference nodes
+	 */
+	public PreferenceDialog(Window parent, Configuration conf,
+			Preferences... preferences) {
 		super(parent, ModalityType.DOCUMENT_MODAL);
+		config = conf != null ? conf : new Configuration();
 		setPreferences(preferences);
 		init();
 	}
 
 	/**
 	 * Initializes the User Interface (UI) for this dialog. A left panel
-	 * contains a tree hierarchy of the {@link IPreferenceNode}s; when the user
-	 * selects a <code>IPreferenceNode</code> the page panel (the right on the
-	 * right) updates to show the {@link IPreferencePage} associated with the
-	 * <code>IPreferenceNode</code>.
+	 * contains a tree hierarchy; when the user selects a node the
+	 * {@link #editTable} displays the preferences for that node.
 	 */
 	private void init() {
+		try {
+			setIconImage(ImageIO.read(PreferenceDialog.class.getClassLoader()
+					.getResourceAsStream("preferences.png")));
+		} catch (IOException e) {
+			// let system use default image
+		}
 		setLayout(new BorderLayout());
 		setTitle("Preferences Dialog");
 		setMinimumSize(new Dimension(400, 400));
-
-		loadTestData(preferences);
-		try {
-			System.out.println(Arrays.toString(preferences.keys()));
-		} catch (BackingStoreException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 
 		ActionListener closeAction = new ActionListener() {
 
@@ -124,21 +158,63 @@ public class PreferenceDialog extends JDialog {
 		// Edit Table
 		//
 		editTable = new JTable();
+		editTable.getInputMap().put(
+				KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0),
+				"deletePreference");
+		editTable.getActionMap().put("deletePreference", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				deleteRows(editTable.getSelectedRows());
+			}
+
+			private void deleteRows(int... rows) {
+				TableModel model = editTable.getModel();
+				if (model instanceof PrefTableModel) {
+					PrefTableModel prefModel = (PrefTableModel) model;
+					for (int i = 0; i < rows.length; i++) {
+						prefModel.removeRow(rows[i]);
+					}
+				}
+			}
+		});
+		editTable.getInputMap().put(
+				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "addPreference");
+		editTable.getActionMap().put("addPreference", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO show dialog
+				// addRow("New Key", "New Value");
+			}
+
+			private void addRow(String key, Object value) {
+				TableModel model = editTable.getModel();
+				if (model instanceof PrefTableModel) {
+					PrefTableModel prefModel = (PrefTableModel) model;
+					prefModel.addRow(key, value);
+				}
+			}
+		});
 
 		//
 		// TreePanel -- panel containing the tree hierarchy
 		//
-		tree = createTree(true, false, getPreferences());
+		JPanel treePanel = new JPanel(new BorderLayout());
+		if (config.isSearchEnabled()) {
+			JTextField searchField = new JTextField("Search...");
+			treePanel.add(searchField, BorderLayout.NORTH);
+		}
 		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
 		renderer.setOpenIcon(null);
 		renderer.setLeafIcon(null);
 		renderer.setClosedIcon(null);
 
+		tree = createTree(true, false, getPreferences());
 		tree.setCellRenderer(renderer);
-		tree.setBorder(BorderFactory.createLoweredBevelBorder());
+		treePanel.add(new JScrollPane(tree), BorderLayout.CENTER);
 
 		// Buttons
-
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		JButton closeButton = new JButton("Close");
 		closeButton.addActionListener(closeAction);
@@ -147,38 +223,31 @@ public class PreferenceDialog extends JDialog {
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setOneTouchExpandable(true);
-		splitPane.setLeftComponent(new JScrollPane(tree));
+		splitPane.setLeftComponent(treePanel);
 		splitPane.setRightComponent(new JScrollPane(editTable));
 		add(splitPane, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
 
+		setLocationRelativeTo(getParent());
 		pack();
 	}
 
-	private void loadTestData(Preferences p) {
-		p.put("test String", "hello world");
-		p.putBoolean("test Boolean", true);
-		p.putDouble("test Double", 3.14159);
-		p.putInt("test Integer", 7);
-		try {
-			preferences.sync();
-		} catch (BackingStoreException e) {
-			e.printStackTrace();
-		}
-	}
-
 	/**
-	 * @return the preferences
+	 * Returns the root preference nodes to be displayed in the tree.
+	 * 
+	 * @return the root preferences nodes
 	 */
-	public Preferences getPreferences() {
+	public Preferences[] getPreferences() {
 		return preferences;
 	}
 
 	/**
+	 * Sets the root preference nodes to be displayed in the tree.
+	 * 
 	 * @param preferences
-	 *            the preferences to set
+	 *            the root preferences nodes
 	 */
-	public void setPreferences(Preferences preferences) {
+	public void setPreferences(Preferences... preferences) {
 		this.preferences = preferences;
 	}
 
@@ -229,48 +298,62 @@ public class PreferenceDialog extends JDialog {
 
 	/**
 	 * Creates and returns a <code>MutableTreeNode</code> for the
-	 * <code>obj</code> in the system preferences space.
+	 * <code>preference</code> in the system preferences space.
+	 * <p>
+	 * This is equivalent to <code>createRootNode(preference, false)</code>
 	 * 
 	 * @param preference
-	 *            the object containing preferences (passed to
-	 *            {@link Preferences#systemNodeForPackage(Class)}
-	 * @return a new tree node based on the specified <code>obj</code>
+	 *            the preferences object
+	 * @return a new tree node based on the specified <code>preference</code>
 	 */
 	protected MutableTreeNode createSystemRootNode(Preferences preference) {
-		MutableTreeNode node = null;
-		try {
-			if (preference == null) {
-				node = new PrefTreeNode(Preferences.systemRoot());
-			} else {
-				node = new PrefTreeNode(preference);
-			}
-		} catch (BackingStoreException e) {
-			e.printStackTrace();
-			node = new DefaultMutableTreeNode("No System Preferences!");
-		}
-		return node;
+		return createRootNode(preference, false);
 	}
 
 	/**
 	 * Creates and returns a <code>MutableTreeNode</code> for the
-	 * <code>obj</code> in the user preferences space.
+	 * <code>preference</code> in the user preferences space.
+	 * <p>
+	 * This is equivalent to <code>createRootNode(preference, true/code>
 	 * 
 	 * @param preference
-	 *            the object containing preferences (passed to
-	 *            {@link Preferences#userNodeForPackage(Class)}
-	 * @return a new tree node based on the specified <code>obj</code>
+	 *            the preferences object
+	 * @return a new tree node based on the specified <code>preference</code>
 	 */
 	protected MutableTreeNode createUserRootNode(Preferences preference) {
+		return createRootNode(preference, true);
+	}
+
+	/**
+	 * Creates and returns a <code>MutableTreeNode</code> for the
+	 * <code>preference</code> in the user preferences space.
+	 * 
+	 * @param preference
+	 *            the preferences object
+	 * @param defaultUser
+	 *            <code>true</code> to fall back to
+	 *            <code>Preferences.userRoot()</code> or <code>false</code> to
+	 *            fall back to <code>Preferences.systemRoot()</code> if
+	 *            <code>pref</code> is <code>null</code>
+	 * @return a new tree node based on the specified <code>obj</code>
+	 */
+	protected MutableTreeNode createRootNode(Preferences preference,
+			boolean defaultUser) {
 		MutableTreeNode node = null;
 		try {
 			if (preference == null) {
-				node = new PrefTreeNode(Preferences.userRoot());
+				node = new PrefTreeNode(defaultUser ? Preferences.userRoot()
+						: Preferences.systemRoot());
 			} else {
 				node = new PrefTreeNode(preference);
+				// TODO see if it is possible to use
+				// Preferences.userNodeForPackage(Class<?>)
 			}
 		} catch (BackingStoreException e) {
 			e.printStackTrace();
-			node = new DefaultMutableTreeNode("No User Preferences!");
+			node = new DefaultMutableTreeNode(
+					defaultUser ? "No User Preferences!"
+							: "No System Preferences!");
 		}
 		return node;
 	}

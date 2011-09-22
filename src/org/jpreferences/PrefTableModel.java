@@ -1,22 +1,56 @@
 package org.jpreferences;
 
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.table.AbstractTableModel;
 
 /**
+ * The <code>PrefTableModel</code> wraps a {@link Preferences} object to view
+ * and edit its children preferences.
  * 
  * @author Erich Schroeter, http://www.roseindia.net/javatutorials/javaapi.shtml
  */
 @SuppressWarnings("serial")
 class PrefTableModel extends AbstractTableModel {
 
+	/** The preference object to wrap. */
 	private Preferences pref;
+	/** A reference to the preference keys. */
 	private String[] keys;
 
+	/**
+	 * Constructs a <code>PrefTableModel</code> wrapping the specified
+	 * <code>pref</code>.
+	 * 
+	 * @param pref
+	 *            the preference object to wrap
+	 */
 	public PrefTableModel(Preferences pref) {
 		this.pref = pref;
+		updateKeys();
+		pref.addPreferenceChangeListener(new PreferenceChangeListener() {
+
+			@Override
+			public void preferenceChange(PreferenceChangeEvent evt) {
+				String value = evt.getNewValue();
+				if (value != null) {
+					addRow(evt.getKey(), evt.getNewValue());
+				} else {
+					remove(evt.getKey());
+				}
+			}
+		});
+	}
+
+	/**
+	 * Resets the reference of {@link #keys} to {@link #pref}
+	 * <code>.keys()</code> and handles catching the
+	 * {@link BackingStoreException} it throws.
+	 */
+	protected void updateKeys() {
 		try {
 			keys = pref.keys();
 		} catch (BackingStoreException e) {
@@ -25,6 +59,46 @@ class PrefTableModel extends AbstractTableModel {
 			e.printStackTrace();
 			keys = new String[0];
 		}
+	}
+
+	/**
+	 * Calls {@link #pref}<code>.sync()</code> and handles catching the
+	 * {@link BackingStoreException} it throws.
+	 */
+	protected void sync() {
+		try {
+			// make sure the backing store is synchronized with latest update
+			pref.sync();
+		} catch (BackingStoreException e) {
+			System.out
+					.println("Error synchronizing backStore with updated value");
+			e.printStackTrace();
+		}
+	}
+
+	public void addRow(String key, Object value) {
+		String val = pref.get(key, null);
+		if (val == null) {
+			pref.put(key, value.toString());
+			sync();
+			updateKeys();
+			// fireTableDataChanged();
+			fireTableRowsInserted(getRowCount(), getRowCount());
+		}
+	}
+
+	public void remove(String key) {
+		pref.remove(key);
+		sync();
+		updateKeys();
+		fireTableDataChanged();
+	}
+
+	public void removeRow(int rowIndex) {
+		pref.remove(keys[rowIndex]);
+		sync();
+		updateKeys();
+		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 
 	@Override
@@ -62,22 +136,19 @@ class PrefTableModel extends AbstractTableModel {
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		pref.put(keys[rowIndex], aValue.toString());
-		try {
-			// make sure the backing store is synchronized with latest update
-			pref.sync();
-		} catch (BackingStoreException e) {
-			System.out
-					.println("Error synchronizing backStore with updated value");
-			e.printStackTrace();
-		}
+		sync();
+		fireTableCellUpdated(rowIndex, columnIndex);
 	}
 
 	@Override
 	public Object getValueAt(int row, int column) {
+		Object value = null;
 		String key = keys[row];
-		if (column == 0)
-			return key;
-		Object value = pref.get(key, "(Unknown)");
+		if (column == 0) {
+			value = key;
+		} else {
+			value = pref.get(key, "(Unknown)");
+		}
 		return value;
 	}
 
