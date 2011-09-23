@@ -16,6 +16,7 @@ import java.util.prefs.Preferences;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -32,7 +33,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
-import org.jpreferences.page.PreferencePage;
+import org.jpreferences.page.Page;
+import org.jpreferences.page.CustomPage;
 
 /**
  * A <code>PreferenceDialog</code> provides a graphical interface for users to
@@ -51,7 +53,7 @@ public class PreferenceDialog extends JDialog {
 	/** The root preference nodes to be displayed in the {@link #tree}. */
 	private Preferences[] preferences;
 	/** The list of custom preference pages. */
-	private List<PreferencePage<?>> customPages;
+	private List<CustomPage<?>> customPages;
 
 	/** Whether the search feature is enabled or disabled. */
 	private boolean searchEnabled;
@@ -67,6 +69,32 @@ public class PreferenceDialog extends JDialog {
 		public void actionPerformed(ActionEvent e) {
 			setVisible(false);
 			dispose();
+		}
+	};
+	/**
+	 * Listens to the node selected in {@link #tree} and handles what is
+	 * displayed.
+	 */
+	private TreeSelectionListener nodeSelectionListener = new TreeSelectionListener() {
+
+		@Override
+		public void valueChanged(TreeSelectionEvent e) {
+			try {
+				Object node = e.getPath().getLastPathComponent();
+				// PreferenceTreeNode node = (PreferenceTreeNode) e.getPath()
+				// .getLastPathComponent();
+
+				if (node instanceof PreferenceTreeNode) {
+					Preferences pref = ((PreferenceTreeNode) node)
+							.getPrefObject();
+					editTable.setModel(new PreferenceTableModel(pref));
+				} else if (node instanceof DefaultMutableTreeNode) {
+
+				}
+			} catch (ClassCastException ce) {
+				// node wasn't a PreferenceTreeNode
+				editTable.setModel(new DefaultTableModel());
+			}
 		}
 	};
 
@@ -122,7 +150,7 @@ public class PreferenceDialog extends JDialog {
 		setTitle("Preferences Dialog");
 		setMinimumSize(new Dimension(400, 400));
 
-		customPages = new Vector<PreferencePage<?>>();
+		customPages = new Vector<CustomPage<?>>();
 
 		setEscapeToCloseEnabled(true);
 
@@ -241,15 +269,23 @@ public class PreferenceDialog extends JDialog {
 		KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
 		if (enable) {
 			// bind Escape key to close the dialog
-			getRootPane().getInputMap().put(escapeStroke,
-					escapeStroke.toString());
+			getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+					escapeStroke, escapeStroke.toString());
 			getRootPane().getActionMap().put(escapeStroke.toString(),
 					closeAction);
+			getRootPane().registerKeyboardAction(closeAction, escapeStroke, 1);
 		} else {
 			// unbind Escape key from closing the dialog
-			getRootPane().getInputMap().remove(escapeStroke);
+			getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+					.remove(escapeStroke);
 			getRootPane().getActionMap().remove(escapeStroke.toString());
 		}
+	}
+
+	protected void addNodeFor(Page page) {
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel()
+				.getRoot();
+		root.add(new CustomPageTreeNode(page));
 	}
 
 	/**
@@ -264,7 +300,7 @@ public class PreferenceDialog extends JDialog {
 	 * @return <code>true</code> if <code>page</code> was added, else
 	 *         <code>false</code>
 	 */
-	public boolean add(PreferencePage<?> page) {
+	public boolean add(CustomPage<?> page) {
 		boolean added = false;
 		if (isCustomPagesEnabled()) {
 			customPages.add(page);
@@ -279,7 +315,7 @@ public class PreferenceDialog extends JDialog {
 	 * @param page
 	 *            the preference page
 	 */
-	public void remove(PreferencePage<?> page) {
+	public void remove(CustomPage<?> page) {
 		// TODO handle removing the PreferenceTreeNode
 		// TODO handle falling back to last selected node
 		customPages.remove(page);
@@ -331,21 +367,7 @@ public class PreferenceDialog extends JDialog {
 		}
 		DefaultTreeModel model = new DefaultTreeModel(root);
 		JTree tree = new JTree(model);
-		tree.addTreeSelectionListener(new TreeSelectionListener() {
-
-			@Override
-			public void valueChanged(TreeSelectionEvent e) {
-				try {
-					PreferenceTreeNode node = (PreferenceTreeNode) e.getPath()
-							.getLastPathComponent();
-					Preferences pref = node.getPrefObject();
-					editTable.setModel(new PreferenceTableModel(pref));
-				} catch (ClassCastException ce) {
-					// System.out.println("Node not PrefTreeNode!");
-					editTable.setModel(new DefaultTableModel());
-				}
-			}
-		});
+		tree.addTreeSelectionListener(nodeSelectionListener);
 		return tree;
 	}
 
