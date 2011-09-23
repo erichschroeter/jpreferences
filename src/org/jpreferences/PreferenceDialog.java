@@ -6,16 +6,16 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.List;
+import java.util.Vector;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -27,11 +27,12 @@ import javax.swing.KeyStroke;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
+
+import org.jpreferences.page.PreferencePage;
 
 /**
  * A <code>PreferenceDialog</code> provides a graphical interface for users to
@@ -49,11 +50,25 @@ public class PreferenceDialog extends JDialog {
 	private JTable editTable;
 	/** The root preference nodes to be displayed in the {@link #tree}. */
 	private Preferences[] preferences;
+	/** The list of custom preference pages. */
+	private List<PreferencePage<?>> customPages;
 
 	/** Whether the search feature is enabled or disabled. */
 	private boolean searchEnabled;
 	/** Whether custom pages are allowed to be added. */
 	private boolean customPagesEnabled;
+	/** Whether the escape key is bound to close the dialog. */
+	private boolean escapeToCloseEnabled;
+
+	/** The action that handles closing the dialog. */
+	private AbstractAction closeAction = new AbstractAction() {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			setVisible(false);
+			dispose();
+		}
+	};
 
 	// TODO implement search for preferences and values
 
@@ -107,61 +122,14 @@ public class PreferenceDialog extends JDialog {
 		setTitle("Preferences Dialog");
 		setMinimumSize(new Dimension(400, 400));
 
-		ActionListener closeAction = new ActionListener() {
+		customPages = new Vector<PreferencePage<?>>();
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-				dispose();
-			}
-		};
-		// bind Escape key to close the dialog
-		KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-		getRootPane().registerKeyboardAction(closeAction, escapeStroke,
-				JComponent.WHEN_IN_FOCUSED_WINDOW);
+		setEscapeToCloseEnabled(true);
 
 		//
 		// Edit Table
 		//
-		editTable = new JTable();
-		editTable.getInputMap().put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0),
-				"deletePreference");
-		editTable.getActionMap().put("deletePreference", new AbstractAction() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				deleteRows(editTable.getSelectedRows());
-			}
-
-			private void deleteRows(int... rows) {
-				TableModel model = editTable.getModel();
-				if (model instanceof PreferenceTableModel) {
-					PreferenceTableModel prefModel = (PreferenceTableModel) model;
-					for (int i = 0; i < rows.length; i++) {
-						prefModel.removeRow(rows[i]);
-					}
-				}
-			}
-		});
-		editTable.getInputMap().put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "addPreference");
-		editTable.getActionMap().put("addPreference", new AbstractAction() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO show dialog
-				// addRow("New Key", "New Value");
-			}
-
-			private void addRow(String key, Object value) {
-				TableModel model = editTable.getModel();
-				if (model instanceof PreferenceTableModel) {
-					PreferenceTableModel prefModel = (PreferenceTableModel) model;
-					prefModel.addRow(key, value);
-				}
-			}
-		});
+		editTable = new PreferenceTable();
 
 		//
 		// TreePanel -- panel containing the tree hierarchy
@@ -188,7 +156,6 @@ public class PreferenceDialog extends JDialog {
 
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.setOneTouchExpandable(true);
 		splitPane.setLeftComponent(treePanel);
 		splitPane.setRightComponent(new JScrollPane(editTable));
 		add(splitPane, BorderLayout.CENTER);
@@ -247,6 +214,75 @@ public class PreferenceDialog extends JDialog {
 	 */
 	public void enableCustomPages(boolean enable) {
 		this.customPagesEnabled = enable;
+	}
+
+	/**
+	 * Returns whether the escape key to close feature is enabled or disabled.
+	 * This feature enables/disables the ability to close the dialog with the
+	 * escape key.
+	 * 
+	 * @return <code>true</code> if the feature is enabled, else
+	 *         <code>false</code>
+	 */
+	public boolean isEscapeToCloseEnabled() {
+		return escapeToCloseEnabled;
+	}
+
+	/**
+	 * Enables or disables the escape key to close feature. This feature
+	 * enables/disables the ability to close the dialog with the escape key.
+	 * 
+	 * @param enable
+	 *            <code>true</code> to enable the feature, <code>false</code> to
+	 *            disable
+	 */
+	public void setEscapeToCloseEnabled(boolean enable) {
+		this.escapeToCloseEnabled = enable;
+		KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+		if (enable) {
+			// bind Escape key to close the dialog
+			getRootPane().getInputMap().put(escapeStroke,
+					escapeStroke.toString());
+			getRootPane().getActionMap().put(escapeStroke.toString(),
+					closeAction);
+		} else {
+			// unbind Escape key from closing the dialog
+			getRootPane().getInputMap().remove(escapeStroke);
+			getRootPane().getActionMap().remove(escapeStroke.toString());
+		}
+	}
+
+	/**
+	 * Adds the specified preference page to the preference dialog. A new
+	 * preference node is created in the preference tree. When selected, the
+	 * <code>page</code>'s UI component is displayed.
+	 * <p>
+	 * If the custom pages feature is disabled, this method does nothing.
+	 * 
+	 * @param page
+	 *            the preference page
+	 * @return <code>true</code> if <code>page</code> was added, else
+	 *         <code>false</code>
+	 */
+	public boolean add(PreferencePage<?> page) {
+		boolean added = false;
+		if (isCustomPagesEnabled()) {
+			customPages.add(page);
+			added = true;
+		}
+		return added;
+	}
+
+	/**
+	 * Removes the specified preference page from the preference dialog.
+	 * 
+	 * @param page
+	 *            the preference page
+	 */
+	public void remove(PreferencePage<?> page) {
+		// TODO handle removing the PreferenceTreeNode
+		// TODO handle falling back to last selected node
+		customPages.remove(page);
 	}
 
 	/**
@@ -359,8 +395,9 @@ public class PreferenceDialog extends JDialog {
 		MutableTreeNode node = null;
 		try {
 			if (preference == null) {
-				node = new PreferenceTreeNode(defaultUser ? Preferences.userRoot()
-						: Preferences.systemRoot());
+				node = new PreferenceTreeNode(
+						defaultUser ? Preferences.userRoot()
+								: Preferences.systemRoot());
 			} else {
 				node = new PreferenceTreeNode(preference);
 			}

@@ -10,14 +10,15 @@ import javax.swing.UIManager;
 
 import org.jpreferences.PreferenceDialog;
 
+import example.jpreferences.pages.PersonalInformationPage;
+
 /**
  * An example showing the simple usage of {@link PreferenceDialog}. This example
- * does not include custom preference pages (see
- * {@link SimpleDialogWithCustomPageExample}.
+ * includes using custom preference pages.
  * 
  * @author Erich Schroeter
  */
-class SimpleDialogExample {
+public class SimpleDialogWithCustomPageExample {
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -52,6 +53,10 @@ class SimpleDialogExample {
 					}
 				});
 				dlg.setLocationRelativeTo(null);
+
+				dlg.add(new PersonalInformationPage("Personal",
+						"Enter personal information").getPage());
+
 				dlg.setVisible(true);
 			}
 		});
