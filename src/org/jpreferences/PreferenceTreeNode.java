@@ -8,13 +8,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 /**
- * A <code>PrefTreeNode</code> wraps a {@link Preferences} object allowing it to
- * be used in a {@link JTree}.
+ * A <code>PreferenceTreeNode</code> wraps a {@link Preferences} object allowing
+ * it to be used in a {@link JTree}.
  * 
  * @author Erich Schroeter, http://www.roseindia.net/javatutorials/javaapi.shtml
  */
 @SuppressWarnings("serial")
-public class PrefTreeNode extends DefaultMutableTreeNode {
+public class PreferenceTreeNode extends DefaultMutableTreeNode {
 
 	/** The preferences being wrapped. */
 	private Preferences pref;
@@ -22,7 +22,7 @@ public class PrefTreeNode extends DefaultMutableTreeNode {
 	private String[] children;
 
 	/**
-	 * Constructs a <code>PrefTreeNode</code> specifying the
+	 * Constructs a <code>PreferenceTreeNode</code> specifying the
 	 * <code>Preferences</code> node to be wrapped.
 	 * 
 	 * @param pref
@@ -31,7 +31,7 @@ public class PrefTreeNode extends DefaultMutableTreeNode {
 	 *             if a failure in the backing store occurs, or inability to
 	 *             communicate with it
 	 */
-	public PrefTreeNode(Preferences pref) throws BackingStoreException {
+	public PreferenceTreeNode(Preferences pref) throws BackingStoreException {
 		this.pref = pref;
 		this.children = pref.childrenNames();
 	}
@@ -60,7 +60,7 @@ public class PrefTreeNode extends DefaultMutableTreeNode {
 		TreeNode child = null;
 		if (index < children.length) {
 			try {
-				child = new PrefTreeNode(pref.node(children[index]));
+				child = new PreferenceTreeNode(pref.node(children[index]));
 			} catch (BackingStoreException e) {
 				e.printStackTrace();
 				child = new DefaultMutableTreeNode("Problem Child!");

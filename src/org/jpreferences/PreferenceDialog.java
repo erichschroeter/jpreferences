@@ -136,8 +136,8 @@ public class PreferenceDialog extends JDialog {
 
 			private void deleteRows(int... rows) {
 				TableModel model = editTable.getModel();
-				if (model instanceof PrefTableModel) {
-					PrefTableModel prefModel = (PrefTableModel) model;
+				if (model instanceof PreferenceTableModel) {
+					PreferenceTableModel prefModel = (PreferenceTableModel) model;
 					for (int i = 0; i < rows.length; i++) {
 						prefModel.removeRow(rows[i]);
 					}
@@ -156,8 +156,8 @@ public class PreferenceDialog extends JDialog {
 
 			private void addRow(String key, Object value) {
 				TableModel model = editTable.getModel();
-				if (model instanceof PrefTableModel) {
-					PrefTableModel prefModel = (PrefTableModel) model;
+				if (model instanceof PreferenceTableModel) {
+					PreferenceTableModel prefModel = (PreferenceTableModel) model;
 					prefModel.addRow(key, value);
 				}
 			}
@@ -300,10 +300,10 @@ public class PreferenceDialog extends JDialog {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
 				try {
-					PrefTreeNode node = (PrefTreeNode) e.getPath()
+					PreferenceTreeNode node = (PreferenceTreeNode) e.getPath()
 							.getLastPathComponent();
 					Preferences pref = node.getPrefObject();
-					editTable.setModel(new PrefTableModel(pref));
+					editTable.setModel(new PreferenceTableModel(pref));
 				} catch (ClassCastException ce) {
 					// System.out.println("Node not PrefTreeNode!");
 					editTable.setModel(new DefaultTableModel());
@@ -359,10 +359,10 @@ public class PreferenceDialog extends JDialog {
 		MutableTreeNode node = null;
 		try {
 			if (preference == null) {
-				node = new PrefTreeNode(defaultUser ? Preferences.userRoot()
+				node = new PreferenceTreeNode(defaultUser ? Preferences.userRoot()
 						: Preferences.systemRoot());
 			} else {
-				node = new PrefTreeNode(preference);
+				node = new PreferenceTreeNode(preference);
 			}
 		} catch (BackingStoreException e) {
 			e.printStackTrace();

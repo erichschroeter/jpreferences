@@ -8,13 +8,13 @@ import java.util.prefs.Preferences;
 import javax.swing.table.AbstractTableModel;
 
 /**
- * The <code>PrefTableModel</code> wraps a {@link Preferences} object to view
- * and edit its children preferences.
+ * The <code>PreferenceTableModel</code> wraps a {@link Preferences} object to
+ * view and edit its children preferences.
  * 
  * @author Erich Schroeter, http://www.roseindia.net/javatutorials/javaapi.shtml
  */
 @SuppressWarnings("serial")
-class PrefTableModel extends AbstractTableModel {
+class PreferenceTableModel extends AbstractTableModel {
 
 	/** The preference object to wrap. */
 	private Preferences pref;
@@ -22,13 +22,13 @@ class PrefTableModel extends AbstractTableModel {
 	private String[] keys;
 
 	/**
-	 * Constructs a <code>PrefTableModel</code> wrapping the specified
+	 * Constructs a <code>PreferenceTableModel</code> wrapping the specified
 	 * <code>pref</code>.
 	 * 
 	 * @param pref
 	 *            the preference object to wrap
 	 */
-	public PrefTableModel(Preferences pref) {
+	public PreferenceTableModel(Preferences pref) {
 		this.pref = pref;
 		updateKeys();
 		pref.addPreferenceChangeListener(new PreferenceChangeListener() {
