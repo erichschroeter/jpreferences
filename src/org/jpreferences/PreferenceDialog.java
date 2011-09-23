@@ -34,12 +34,11 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
 /**
- * Provides a graphical interface for users to interact with preference pages.
- * From these preference pages, preferences may be updated.
+ * A <code>PreferenceDialog</code> provides a graphical interface for users to
+ * interact with preferences. The default behavior will display
+ * {@link Preferences} nodes passed to the constructors.
  * 
  * @author Erich Schroeter
- * @version 1.0
- * @created 02-May-2011 6:21:06 PM
  */
 @SuppressWarnings("serial")
 public class PreferenceDialog extends JDialog {
@@ -50,8 +49,11 @@ public class PreferenceDialog extends JDialog {
 	private JTable editTable;
 	/** The root preference nodes to be displayed in the {@link #tree}. */
 	private Preferences[] preferences;
-	/** The configuration used to control the features in the dialog. */
-	private Configuration config;
+
+	/** Whether the search feature is enabled or disabled. */
+	private boolean searchEnabled;
+	/** Whether custom pages are allowed to be added. */
+	private boolean customPagesEnabled;
 
 	// TODO implement search for preferences and values
 
@@ -66,27 +68,9 @@ public class PreferenceDialog extends JDialog {
 	 *            the root preference nodes
 	 */
 	public PreferenceDialog(Dialog parent, Preferences... preferences) {
-		this(parent, null, preferences);
-	}
-
-	/**
-	 * Creates a <code>PreferenceDialog</code> calling
-	 * {@link JDialog#JDialog(Dialog, boolean)}.
-	 * 
-	 * @param parent
-	 *            the <code>Dialog</code> from which the dialog is displayed or
-	 *            <code>null</code> if this dialog has no owner
-	 * @param conf
-	 *            the configuration
-	 * @param preferences
-	 *            the root preference nodes
-	 */
-	public PreferenceDialog(Dialog parent, Configuration conf,
-			Preferences... preferences) {
 		super(parent, true);
-		config = conf != null ? conf : new Configuration();
 		setPreferences(preferences);
-		init();
+		initializeDialog();
 	}
 
 	/**
@@ -102,27 +86,9 @@ public class PreferenceDialog extends JDialog {
 	 *            the root preference nodes
 	 */
 	public PreferenceDialog(Window parent, Preferences... preferences) {
-		this(parent, null, preferences);
-	}
-
-	/**
-	 * Creates a <code>PreferenceDialog</code> calling
-	 * {@link JDialog#JDialog(Window, boolean)}.
-	 * 
-	 * @param parent
-	 *            the <code>Window</code> from which the dialog is displayed or
-	 *            <code>null</code> if this dialog has no owner
-	 * @param conf
-	 *            the configuration
-	 * @param preferences
-	 *            the root preference nodes
-	 */
-	public PreferenceDialog(Window parent, Configuration conf,
-			Preferences... preferences) {
 		super(parent, ModalityType.DOCUMENT_MODAL);
-		config = conf != null ? conf : new Configuration();
 		setPreferences(preferences);
-		init();
+		initializeDialog();
 	}
 
 	/**
@@ -130,7 +96,7 @@ public class PreferenceDialog extends JDialog {
 	 * contains a tree hierarchy; when the user selects a node the
 	 * {@link #editTable} displays the preferences for that node.
 	 */
-	private void init() {
+	protected void initializeDialog() {
 		try {
 			setIconImage(ImageIO.read(PreferenceDialog.class.getClassLoader()
 					.getResourceAsStream("preferences.png")));
@@ -201,7 +167,7 @@ public class PreferenceDialog extends JDialog {
 		// TreePanel -- panel containing the tree hierarchy
 		//
 		JPanel treePanel = new JPanel(new BorderLayout());
-		if (config.isSearchEnabled()) {
+		if (isSearchEnabled()) {
 			JTextField searchField = new JTextField("Search...");
 			treePanel.add(searchField, BorderLayout.NORTH);
 		}
@@ -230,6 +196,57 @@ public class PreferenceDialog extends JDialog {
 
 		setLocationRelativeTo(getParent());
 		pack();
+	}
+
+	/**
+	 * Returns whether the search feature is enabled or disabled. This feature
+	 * displays a search box and filters the preference nodes based on the
+	 * search result.
+	 * 
+	 * @see #enableSearch(boolean)
+	 * @return <code>true</code> if the feature is enabled, else
+	 *         <code>false</code>
+	 */
+	public boolean isSearchEnabled() {
+		return searchEnabled;
+	}
+
+	/**
+	 * Enables or disables the search feature. This feature displays a search
+	 * box and filters the preference nodes based on the search result.
+	 * 
+	 * @see #isSearchEnabled()
+	 * @param enable
+	 *            <code>true</code> to enable the feature, <code>false</code> to
+	 *            disable
+	 */
+	public void enableSearch(boolean enable) {
+		searchEnabled = enable;
+	}
+
+	/**
+	 * Returns whether the custom pages feature is enabled or disabled. This
+	 * feature enables/disables the ability to add custom preference pages.
+	 * 
+	 * @see #enableCustomPages(boolean)
+	 * @return <code>true</code> if the feature is enabled, else
+	 *         <code>false</code>
+	 */
+	public boolean isCustomPagesEnabled() {
+		return customPagesEnabled;
+	}
+
+	/**
+	 * Enables or disables the custom pages feature. This feature
+	 * enables/disables the ability to add custom preference pages.
+	 * 
+	 * @see #isCustomPagesEnabled()
+	 * @param enable
+	 *            <code>true</code> to enable the feature, <code>false</code> to
+	 *            disable
+	 */
+	public void enableCustomPages(boolean enable) {
+		this.customPagesEnabled = enable;
 	}
 
 	/**
@@ -346,8 +363,6 @@ public class PreferenceDialog extends JDialog {
 						: Preferences.systemRoot());
 			} else {
 				node = new PrefTreeNode(preference);
-				// TODO see if it is possible to use
-				// Preferences.userNodeForPackage(Class<?>)
 			}
 		} catch (BackingStoreException e) {
 			e.printStackTrace();
