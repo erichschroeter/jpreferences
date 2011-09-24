@@ -74,6 +74,8 @@ public class PreferenceDialog extends JDialog {
 	private boolean customPagesEnabled;
 	/** Whether the escape key is bound to close the dialog. */
 	private boolean escapeToCloseEnabled;
+	/** Whether the page will be wrapped in a <code>JScrollPane</code>. */
+	private boolean wrapPageInScrollPaneEnabled;
 
 	/** The action that handles closing the dialog. */
 	private AbstractAction closeAction = new AbstractAction() {
@@ -158,6 +160,7 @@ public class PreferenceDialog extends JDialog {
 		setEscapeToCloseEnabled(true);
 		setSearchEnabled(false);
 		setCustomPagesEnabled(false);
+		setWrapPageInScrollPaneEnabled(true);
 
 		// a default page
 		page = new BlankPage();
@@ -285,6 +288,34 @@ public class PreferenceDialog extends JDialog {
 		}
 	}
 
+	/**
+	 * Returns whether the custom page will be wrapped in a
+	 * <code>JScrollPane</code> feature is enabled or disabled. This feature
+	 * will wrap the selected page in the right component of the
+	 * {@link #splitPane} in a <code>JScrollPane</code> if enabled, or add the
+	 * custom page component directly.
+	 * 
+	 * @return <code>true</code> if the feature is enabled, else
+	 *         <code>false</code>
+	 */
+	public boolean isWrapPageInScrollPaneEnabled() {
+		return wrapPageInScrollPaneEnabled;
+	}
+
+	/**
+	 * Enables or disables the custom page wrapped in a <code>JScrollPane</code>
+	 * feature. This feature will wrap the selected page in the right component
+	 * of the {@link #splitPane} in a <code>JScrollPane</code> if enabled, or
+	 * add the custom page component directly.
+	 * 
+	 * @param enable
+	 *            <code>true</code> to enable the feature, <code>false</code> to
+	 *            disable
+	 */
+	public void setWrapPageInScrollPaneEnabled(boolean enable) {
+		this.wrapPageInScrollPaneEnabled = enable;
+	}
+
 	protected MutableTreeNode addNodeFor(CustomPage<?> page) {
 		return addNode(new CustomPageTreeNode(page));
 	}
@@ -350,13 +381,22 @@ public class PreferenceDialog extends JDialog {
 	/**
 	 * Sets the page to display to the user. This sets the right component of
 	 * the {@link #splitPane} to <code>page</code>.
+	 * <p>
+	 * <em><b>Note:</b> this performs differently based on the result of 
+	 * {@link #isWrapPageInScrollPaneEnabled()}.</em>
 	 * 
+	 * @see #isWrapPageInScrollPaneEnabled()
+	 * @see #setWrapPageInScrollPaneEnabled(boolean)
 	 * @param page
 	 *            the page to display
 	 */
 	public void setPage(CustomPage<?> page) {
 		this.page = page;
-		splitPane.setRightComponent(this.page.getPage());
+		if (isWrapPageInScrollPaneEnabled()) {
+			splitPane.setRightComponent(new JScrollPane(this.page.getPage()));
+		} else {
+			splitPane.setRightComponent(this.page.getPage());
+		}
 	}
 
 	/**
@@ -487,9 +527,8 @@ public class PreferenceDialog extends JDialog {
 		MutableTreeNode node = null;
 		try {
 			if (preference == null) {
-				node = new PreferenceTreeNode(
-						defaultUser ? Preferences.userRoot()
-								: Preferences.systemRoot());
+				node = new PreferenceTreeNode(defaultUser ? Preferences
+						.userRoot() : Preferences.systemRoot());
 			} else {
 				node = new PreferenceTreeNode(preference);
 			}

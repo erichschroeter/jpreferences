@@ -1,0 +1,25 @@
+# Compiled sources
+#####################
+*.class
+*.classpath
+*.project
+
+# Directories
+####################
+classes/
+bin/
+tmp/
+junit/
+jar/
+javadoc/
+
+# OS generated files
+#####################
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Other
+#####################
+.gitignore

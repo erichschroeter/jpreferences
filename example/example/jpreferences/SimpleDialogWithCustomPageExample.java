@@ -2,6 +2,14 @@ package example.jpreferences;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Vector;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -11,6 +19,7 @@ import javax.swing.UIManager;
 import org.jpreferences.PreferenceDialog;
 
 import example.jpreferences.pages.PersonalInformationPage;
+import example.jpreferences.pages.ProfilesPage;
 
 /**
  * An example showing the simple usage of {@link PreferenceDialog}. This example
@@ -57,10 +66,29 @@ public class SimpleDialogWithCustomPageExample {
 
 				dlg.add(new PersonalInformationPage("Personal",
 						"Enter personal information"));
+				try {
+					dlg.add(new ProfilesPage(createTestProfiles()));
+				} catch (FileNotFoundException e) {
+				} catch (URISyntaxException e) {
+				} catch (IOException e) {
+				}
 
 				dlg.setVisible(true);
 			}
 		});
+	}
+
+	public static List<String[]> createTestProfiles()
+			throws URISyntaxException, IOException {
+		List<String[]> profiles = new Vector<String[]>();
+		BufferedReader csv = new BufferedReader(new FileReader(new File(
+				SimpleDialogWithCustomPageExample.class.getClassLoader()
+						.getResource("test/resources/profiles.csv").toURI())));
+		String line;
+		while ((line = csv.readLine()) != null) {
+			profiles.add(line.split(","));
+		}
+		return profiles;
 	}
 
 }
