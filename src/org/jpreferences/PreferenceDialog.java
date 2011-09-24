@@ -8,8 +8,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.List;
-import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -21,13 +21,11 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -35,6 +33,7 @@ import javax.swing.tree.MutableTreeNode;
 
 import org.jpreferences.page.Page;
 import org.jpreferences.page.CustomPage;
+import org.jpreferences.page.PreferencePage;
 
 /**
  * A <code>PreferenceDialog</code> provides a graphical interface for users to
@@ -49,11 +48,25 @@ public class PreferenceDialog extends JDialog {
 	/** The preference node tree the user interacts with to view preferences. */
 	private JTree tree;
 	/** The table displaying the preferences and their values. */
-	private JTable editTable;
+	// private JTable editTable;
+	private CustomPage<?> page;
+	/**
+	 * A reference to the page that displays a table of {@link Preferences}.
+	 * This is kept as a single reference, as opposed to being added to
+	 * {@link #customNodeMap}, for performance.
+	 */
+	private PreferencePage preferencePage;
 	/** The root preference nodes to be displayed in the {@link #tree}. */
 	private Preferences[] preferences;
 	/** The list of custom preference pages. */
-	private List<CustomPage<?>> customPages;
+	private Map<MutableTreeNode, CustomPage<?>> customNodeMap;
+	/** A mapping of the custom pages to their respective node. */
+	private Map<CustomPage<?>, MutableTreeNode> customPageMap;
+	/**
+	 * The left is the {@link #tree}, right is the {@link #page} or
+	 * {@link #preferencePage}.
+	 */
+	private JSplitPane splitPane;
 
 	/** Whether the search feature is enabled or disabled. */
 	private boolean searchEnabled;
@@ -71,32 +84,20 @@ public class PreferenceDialog extends JDialog {
 			dispose();
 		}
 	};
-	/**
-	 * Listens to the node selected in {@link #tree} and handles what is
-	 * displayed.
-	 */
-	private TreeSelectionListener nodeSelectionListener = new TreeSelectionListener() {
+
+	/** A blank page to fall back on. */
+	class BlankPage extends CustomPage<JPanel> {
+
+		public BlankPage(String title) {
+			super(title);
+		}
 
 		@Override
-		public void valueChanged(TreeSelectionEvent e) {
-			try {
-				Object node = e.getPath().getLastPathComponent();
-				// PreferenceTreeNode node = (PreferenceTreeNode) e.getPath()
-				// .getLastPathComponent();
-
-				if (node instanceof PreferenceTreeNode) {
-					Preferences pref = ((PreferenceTreeNode) node)
-							.getPrefObject();
-					editTable.setModel(new PreferenceTableModel(pref));
-				} else if (node instanceof DefaultMutableTreeNode) {
-
-				}
-			} catch (ClassCastException ce) {
-				// node wasn't a PreferenceTreeNode
-				editTable.setModel(new DefaultTableModel());
-			}
+		protected void initializePage(JPanel page) {
+			// keep blank
 		}
-	};
+
+	}
 
 	// TODO implement search for preferences and values
 
@@ -150,14 +151,14 @@ public class PreferenceDialog extends JDialog {
 		setTitle("Preferences Dialog");
 		setMinimumSize(new Dimension(400, 400));
 
-		customPages = new Vector<CustomPage<?>>();
+		customNodeMap = new HashMap<MutableTreeNode, CustomPage<?>>();
+		customPageMap = new HashMap<CustomPage<?>, MutableTreeNode>();
+		preferencePage = new PreferencePage(preferences[0]);
 
 		setEscapeToCloseEnabled(true);
 
-		//
-		// Edit Table
-		//
-		editTable = new PreferenceTable();
+		// a default page
+		page = new BlankPage("");
 
 		//
 		// TreePanel -- panel containing the tree hierarchy
@@ -182,10 +183,10 @@ public class PreferenceDialog extends JDialog {
 		closeButton.addActionListener(closeAction);
 		buttonPanel.add(closeButton);
 
-		JSplitPane splitPane = new JSplitPane();
+		splitPane = new JSplitPane();
 		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setLeftComponent(treePanel);
-		splitPane.setRightComponent(new JScrollPane(editTable));
+		splitPane.setRightComponent(new JScrollPane(page.getPage()));
 		add(splitPane, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
 
@@ -273,7 +274,6 @@ public class PreferenceDialog extends JDialog {
 					escapeStroke, escapeStroke.toString());
 			getRootPane().getActionMap().put(escapeStroke.toString(),
 					closeAction);
-			getRootPane().registerKeyboardAction(closeAction, escapeStroke, 1);
 		} else {
 			// unbind Escape key from closing the dialog
 			getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -282,10 +282,25 @@ public class PreferenceDialog extends JDialog {
 		}
 	}
 
-	protected void addNodeFor(Page page) {
+	protected MutableTreeNode addNodeFor(CustomPage<?> page) {
+		return addNodeFor((Page) new CustomPageTreeNode(page));
+	}
+
+	protected MutableTreeNode addNodeFor(Page page) {
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel()
 				.getRoot();
-		root.add(new CustomPageTreeNode(page));
+		MutableTreeNode node = new PageTreeNode(page);
+		root.add(node);
+System.out.println("added "+page.getPageTitle());
+		return node;
+	}
+
+	protected void removeNodeFor(CustomPage<?> page) {
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel()
+				.getRoot();
+		// find node in map and remove
+		MutableTreeNode node = customPageMap.get(page);
+		root.remove(node);
 	}
 
 	/**
@@ -303,7 +318,9 @@ public class PreferenceDialog extends JDialog {
 	public boolean add(CustomPage<?> page) {
 		boolean added = false;
 		if (isCustomPagesEnabled()) {
-			customPages.add(page);
+			MutableTreeNode node = addNodeFor(page);
+			customNodeMap.put(node, page);
+			customPageMap.put(page, node);
 			added = true;
 		}
 		return added;
@@ -318,7 +335,8 @@ public class PreferenceDialog extends JDialog {
 	public void remove(CustomPage<?> page) {
 		// TODO handle removing the PreferenceTreeNode
 		// TODO handle falling back to last selected node
-		customPages.remove(page);
+		customNodeMap.remove(page);
+		customPageMap.remove(page);
 	}
 
 	/**
@@ -352,6 +370,7 @@ public class PreferenceDialog extends JDialog {
 	 *            <code>false</code> not to
 	 * @param preferences
 	 *            the objects containing preferences to add to the tree
+	 * @see #createTreeSelectionListener()
 	 * @return the preference tree created
 	 */
 	protected JTree createTree(boolean userPreferences,
@@ -367,8 +386,47 @@ public class PreferenceDialog extends JDialog {
 		}
 		DefaultTreeModel model = new DefaultTreeModel(root);
 		JTree tree = new JTree(model);
-		tree.addTreeSelectionListener(nodeSelectionListener);
+		tree.addTreeSelectionListener(createTreeSelectionListener());
 		return tree;
+	}
+
+	/**
+	 * Returns the tree listener that listens to the node selected in
+	 * {@link #tree} and handles the page to be displayed.
+	 * 
+	 * @see #createTree(boolean, boolean, Preferences...)
+	 * @return the tree selection listener
+	 */
+	protected TreeSelectionListener createTreeSelectionListener() {
+		return new TreeSelectionListener() {
+
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				Object node = e.getPath().getLastPathComponent();
+				if (node instanceof PreferenceTreeNode) {
+					// PreferenceTreeNode node = (PreferenceTreeNode)
+					// e.getPath().getLastPathComponent();
+					Preferences pref = ((PreferenceTreeNode) node)
+							.getPrefObject();
+					// editTable.setModel(new PreferenceTableModel(pref));
+					preferencePage.setModel(new PreferenceTableModel(pref));
+					setPage(preferencePage);
+				} else if (node instanceof CustomPageTreeNode) {
+					setPage(customNodeMap.get(node));
+				} else {
+					setPage(new BlankPage(""));
+				}
+			}
+		};
+	}
+
+	/**
+	 * 
+	 * @param page
+	 */
+	public void setPage(CustomPage<?> page) {
+		this.page = page;
+		splitPane.setRightComponent(page.getPage());
 	}
 
 	/**
@@ -417,9 +475,8 @@ public class PreferenceDialog extends JDialog {
 		MutableTreeNode node = null;
 		try {
 			if (preference == null) {
-				node = new PreferenceTreeNode(
-						defaultUser ? Preferences.userRoot()
-								: Preferences.systemRoot());
+				node = new PreferenceTreeNode(defaultUser ? Preferences
+						.userRoot() : Preferences.systemRoot());
 			} else {
 				node = new PreferenceTreeNode(preference);
 			}

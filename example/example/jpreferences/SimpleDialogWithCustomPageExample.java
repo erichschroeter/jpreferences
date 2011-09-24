@@ -55,7 +55,7 @@ public class SimpleDialogWithCustomPageExample {
 				dlg.setLocationRelativeTo(null);
 
 				dlg.add(new PersonalInformationPage("Personal",
-						"Enter personal information").getPage());
+						"Enter personal information"));
 
 				dlg.setVisible(true);
 			}

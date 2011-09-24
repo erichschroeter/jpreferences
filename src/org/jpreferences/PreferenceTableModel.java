@@ -14,7 +14,7 @@ import javax.swing.table.AbstractTableModel;
  * @author Erich Schroeter, http://www.roseindia.net/javatutorials/javaapi.shtml
  */
 @SuppressWarnings("serial")
-class PreferenceTableModel extends AbstractTableModel {
+public class PreferenceTableModel extends AbstractTableModel {
 
 	/** The column index for the keys. */
 	private static final int KEY_COLUMN = 0;
