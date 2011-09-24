@@ -41,6 +41,7 @@ public class SimpleDialogWithCustomPageExample {
 
 				PreferenceDialog dlg = new PreferenceDialog(frame, prefs,
 						Preferences.userRoot(), Preferences.systemRoot());
+				dlg.setCustomPagesEnabled(true);
 				dlg.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowClosing(WindowEvent e) {

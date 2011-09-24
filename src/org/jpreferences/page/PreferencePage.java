@@ -2,8 +2,10 @@ package org.jpreferences.page;
 
 import java.util.prefs.Preferences;
 
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
+import org.jpreferences.PreferenceTable;
 import org.jpreferences.PreferenceTableModel;
 
 /**
@@ -12,7 +14,10 @@ import org.jpreferences.PreferenceTableModel;
  * 
  * @author Erich Schroeter
  */
-public class PreferencePage extends CustomPage<JTable> {
+public class PreferencePage extends CustomPage<JScrollPane> {
+
+	/** The preference table. */
+	private JTable prefTable;
 
 	/**
 	 * Constructs a <code>PreferencePage</code> specifying the preference node
@@ -22,11 +27,13 @@ public class PreferencePage extends CustomPage<JTable> {
 	 *            the preferences node
 	 */
 	public PreferencePage(Preferences preference) {
-		super(preference.name(), new JTable());
+		super(preference.name(), new JScrollPane());
 	}
 
 	@Override
-	protected void initializePage(JTable page) {
+	protected void initializePage(JScrollPane page) {
+		prefTable = new PreferenceTable();
+		page.setViewportView(prefTable);
 	}
 
 	/**
@@ -36,7 +43,7 @@ public class PreferencePage extends CustomPage<JTable> {
 	 *            the model to set
 	 */
 	public void setModel(PreferenceTableModel model) {
-		page.setModel(model);
+		prefTable.setModel(model);
 	}
 
 }

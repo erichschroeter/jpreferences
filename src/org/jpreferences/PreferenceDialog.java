@@ -40,7 +40,8 @@ import org.jpreferences.page.PreferencePage;
  * interact with preferences. The default behavior will display
  * {@link Preferences} nodes passed to the constructors.
  * 
- * @author Erich Schroeter
+ * @author Erich Schroeter, help from
+ *         http://www.roseindia.net/javatutorials/javaapi.shtml
  */
 @SuppressWarnings("serial")
 public class PreferenceDialog extends JDialog {
@@ -48,7 +49,6 @@ public class PreferenceDialog extends JDialog {
 	/** The preference node tree the user interacts with to view preferences. */
 	private JTree tree;
 	/** The table displaying the preferences and their values. */
-	// private JTable editTable;
 	private CustomPage<?> page;
 	/**
 	 * A reference to the page that displays a table of {@link Preferences}.
@@ -88,8 +88,8 @@ public class PreferenceDialog extends JDialog {
 	/** A blank page to fall back on. */
 	class BlankPage extends CustomPage<JPanel> {
 
-		public BlankPage(String title) {
-			super(title);
+		public BlankPage() {
+			super("");
 		}
 
 		@Override
@@ -156,9 +156,11 @@ public class PreferenceDialog extends JDialog {
 		preferencePage = new PreferencePage(preferences[0]);
 
 		setEscapeToCloseEnabled(true);
+		setSearchEnabled(false);
+		setCustomPagesEnabled(false);
 
 		// a default page
-		page = new BlankPage("");
+		page = new BlankPage();
 
 		//
 		// TreePanel -- panel containing the tree hierarchy
@@ -185,6 +187,7 @@ public class PreferenceDialog extends JDialog {
 
 		splitPane = new JSplitPane();
 		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane.setResizeWeight(0.3); // tree doesn't need more than 30%
 		splitPane.setLeftComponent(treePanel);
 		splitPane.setRightComponent(new JScrollPane(page.getPage()));
 		add(splitPane, BorderLayout.CENTER);
@@ -199,7 +202,7 @@ public class PreferenceDialog extends JDialog {
 	 * displays a search box and filters the preference nodes based on the
 	 * search result.
 	 * 
-	 * @see #enableSearch(boolean)
+	 * @see #setSearchEnabled(boolean)
 	 * @return <code>true</code> if the feature is enabled, else
 	 *         <code>false</code>
 	 */
@@ -216,7 +219,7 @@ public class PreferenceDialog extends JDialog {
 	 *            <code>true</code> to enable the feature, <code>false</code> to
 	 *            disable
 	 */
-	public void enableSearch(boolean enable) {
+	public void setSearchEnabled(boolean enable) {
 		searchEnabled = enable;
 	}
 
@@ -224,7 +227,7 @@ public class PreferenceDialog extends JDialog {
 	 * Returns whether the custom pages feature is enabled or disabled. This
 	 * feature enables/disables the ability to add custom preference pages.
 	 * 
-	 * @see #enableCustomPages(boolean)
+	 * @see #setCustomPagesEnabled(boolean)
 	 * @return <code>true</code> if the feature is enabled, else
 	 *         <code>false</code>
 	 */
@@ -241,7 +244,7 @@ public class PreferenceDialog extends JDialog {
 	 *            <code>true</code> to enable the feature, <code>false</code> to
 	 *            disable
 	 */
-	public void enableCustomPages(boolean enable) {
+	public void setCustomPagesEnabled(boolean enable) {
 		this.customPagesEnabled = enable;
 	}
 
@@ -283,24 +286,27 @@ public class PreferenceDialog extends JDialog {
 	}
 
 	protected MutableTreeNode addNodeFor(CustomPage<?> page) {
-		return addNodeFor((Page) new CustomPageTreeNode(page));
+		return addNode(new CustomPageTreeNode(page));
 	}
 
 	protected MutableTreeNode addNodeFor(Page page) {
-		DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel()
-				.getRoot();
-		MutableTreeNode node = new PageTreeNode(page);
-		root.add(node);
-System.out.println("added "+page.getPageTitle());
+		return addNode(new PageTreeNode(page));
+	}
+
+	protected MutableTreeNode addNode(MutableTreeNode node) {
+		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+		model.insertNodeInto(node, root, root.getChildCount());
 		return node;
 	}
 
 	protected void removeNodeFor(CustomPage<?> page) {
-		DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel()
-				.getRoot();
-		// find node in map and remove
-		MutableTreeNode node = customPageMap.get(page);
-		root.remove(node);
+		removeNode(customPageMap.get(page));
+	}
+
+	protected void removeNode(MutableTreeNode node) {
+		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+		model.removeNodeFromParent(node);
 	}
 
 	/**
@@ -329,14 +335,28 @@ System.out.println("added "+page.getPageTitle());
 	/**
 	 * Removes the specified preference page from the preference dialog.
 	 * 
+	 * @TODO handle falling back to last selected node
+	 * 
 	 * @param page
 	 *            the preference page
 	 */
 	public void remove(CustomPage<?> page) {
-		// TODO handle removing the PreferenceTreeNode
 		// TODO handle falling back to last selected node
+		removeNodeFor(page);
 		customNodeMap.remove(page);
 		customPageMap.remove(page);
+	}
+
+	/**
+	 * Sets the page to display to the user. This sets the right component of
+	 * the {@link #splitPane} to <code>page</code>.
+	 * 
+	 * @param page
+	 *            the page to display
+	 */
+	public void setPage(CustomPage<?> page) {
+		this.page = page;
+		splitPane.setRightComponent(this.page.getPage());
 	}
 
 	/**
@@ -410,23 +430,15 @@ System.out.println("added "+page.getPageTitle());
 							.getPrefObject();
 					// editTable.setModel(new PreferenceTableModel(pref));
 					preferencePage.setModel(new PreferenceTableModel(pref));
+					preferencePage.setPageTitle(pref.name());
 					setPage(preferencePage);
 				} else if (node instanceof CustomPageTreeNode) {
 					setPage(customNodeMap.get(node));
 				} else {
-					setPage(new BlankPage(""));
+					setPage(new BlankPage());
 				}
 			}
 		};
-	}
-
-	/**
-	 * 
-	 * @param page
-	 */
-	public void setPage(CustomPage<?> page) {
-		this.page = page;
-		splitPane.setRightComponent(page.getPage());
 	}
 
 	/**
@@ -475,8 +487,9 @@ System.out.println("added "+page.getPageTitle());
 		MutableTreeNode node = null;
 		try {
 			if (preference == null) {
-				node = new PreferenceTreeNode(defaultUser ? Preferences
-						.userRoot() : Preferences.systemRoot());
+				node = new PreferenceTreeNode(
+						defaultUser ? Preferences.userRoot()
+								: Preferences.systemRoot());
 			} else {
 				node = new PreferenceTreeNode(preference);
 			}
