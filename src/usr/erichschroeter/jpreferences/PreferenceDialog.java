@@ -1,4 +1,4 @@
-package org.jpreferences;
+package usr.erichschroeter.jpreferences;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
@@ -31,9 +31,9 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
-import org.jpreferences.page.Page;
-import org.jpreferences.page.CustomPage;
-import org.jpreferences.page.PreferencePage;
+import usr.erichschroeter.jpreferences.page.CustomPage;
+import usr.erichschroeter.jpreferences.page.Page;
+import usr.erichschroeter.jpreferences.page.PreferencePage;
 
 /**
  * A <code>PreferenceDialog</code> provides a graphical interface for users to

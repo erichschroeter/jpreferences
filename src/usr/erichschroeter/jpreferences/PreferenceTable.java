@@ -1,4 +1,4 @@
-package org.jpreferences;
+package usr.erichschroeter.jpreferences;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;

@@ -1,10 +1,10 @@
-package org.jpreferences.page;
+package usr.erichschroeter.jpreferences.page;
 
 import java.awt.Component;
 
 import javax.swing.JPanel;
 
-import org.jpreferences.PreferenceDialog;
+import usr.erichschroeter.jpreferences.PreferenceDialog;
 
 /**
  * A <code>CustomPage</code> implements the {@link Page} interface and is

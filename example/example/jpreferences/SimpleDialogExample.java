@@ -8,7 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.jpreferences.PreferenceDialog;
+import usr.erichschroeter.jpreferences.PreferenceDialog;
 
 /**
  * An example showing the simple usage of {@link PreferenceDialog}. This example

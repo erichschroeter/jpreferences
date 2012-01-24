@@ -1,9 +1,9 @@
-package org.jpreferences;
+package usr.erichschroeter.jpreferences;
 
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.jpreferences.page.Page;
+import usr.erichschroeter.jpreferences.page.Page;
 
 /**
  * A <code>PageTreeNode</code> wraps a {@link Page} object allowing it to be

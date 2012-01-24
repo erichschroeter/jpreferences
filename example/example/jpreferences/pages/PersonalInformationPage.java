@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
-import org.jpreferences.page.CustomPage;
+import usr.erichschroeter.jpreferences.page.CustomPage;
 
 /**
  * An example preference page to display some basic fields for entering personal

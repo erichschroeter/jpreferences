@@ -16,7 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.jpreferences.PreferenceDialog;
+import usr.erichschroeter.jpreferences.PreferenceDialog;
 
 import example.jpreferences.pages.PersonalInformationPage;
 import example.jpreferences.pages.ProfilesPage;

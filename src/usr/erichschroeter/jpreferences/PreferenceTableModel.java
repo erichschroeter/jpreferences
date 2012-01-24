@@ -1,4 +1,4 @@
-package org.jpreferences;
+package usr.erichschroeter.jpreferences;
 
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;

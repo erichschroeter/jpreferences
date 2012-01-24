@@ -1,4 +1,4 @@
-package org.jpreferences.page;
+package usr.erichschroeter.jpreferences.page;
 
 /**
  * The <code>Page</code> interface provides methods for accessing and modifying

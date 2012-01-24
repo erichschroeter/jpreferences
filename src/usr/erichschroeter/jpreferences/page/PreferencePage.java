@@ -1,12 +1,12 @@
-package org.jpreferences.page;
+package usr.erichschroeter.jpreferences.page;
 
 import java.util.prefs.Preferences;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import org.jpreferences.PreferenceTable;
-import org.jpreferences.PreferenceTableModel;
+import usr.erichschroeter.jpreferences.PreferenceTable;
+import usr.erichschroeter.jpreferences.PreferenceTableModel;
 
 /**
  * A <code>PreferencePage</code> is a page that displays {@link Preferences} and

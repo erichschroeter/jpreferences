@@ -1,8 +1,8 @@
-package org.jpreferences;
+package usr.erichschroeter.jpreferences;
 
 import javax.swing.JTree;
 
-import org.jpreferences.page.CustomPage;
+import usr.erichschroeter.jpreferences.page.CustomPage;
 
 /**
  * A <code>CustomPageTreeNode</code> wraps a {@link CustomPage} object allowing

@@ -11,7 +11,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
-import org.jpreferences.page.CustomPage;
+import usr.erichschroeter.jpreferences.page.CustomPage;
 
 /**
  * The <code>ProfilesPage</code> is a preference page that allows users to view,

@@ -1,4 +1,4 @@
-package org.jpreferences.utils;
+package usr.erichschroeter.jpreferences.utils;
 
 import java.util.prefs.Preferences;
 
