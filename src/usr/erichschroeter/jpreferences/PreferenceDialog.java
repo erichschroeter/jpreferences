@@ -144,8 +144,11 @@ public class PreferenceDialog extends JDialog {
 	 */
 	protected void initializeDialog() {
 		try {
-			setIconImage(ImageIO.read(PreferenceDialog.class.getClassLoader()
-					.getResourceAsStream("preferences.png")));
+			setIconImage(ImageIO
+					.read(PreferenceDialog.class
+							.getClassLoader()
+							.getResourceAsStream(
+									"usr/erichschroeter/jpreferences/res/preferences.png")));
 		} catch (IOException e) {
 			// let system use default image
 		}
@@ -527,8 +530,9 @@ public class PreferenceDialog extends JDialog {
 		MutableTreeNode node = null;
 		try {
 			if (preference == null) {
-				node = new PreferenceTreeNode(defaultUser ? Preferences
-						.userRoot() : Preferences.systemRoot());
+				node = new PreferenceTreeNode(
+						defaultUser ? Preferences.userRoot()
+								: Preferences.systemRoot());
 			} else {
 				node = new PreferenceTreeNode(preference);
 			}
