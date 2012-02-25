@@ -121,13 +121,11 @@ public class PreferenceDialog extends JDialog {
 
 	/**
 	 * Creates a <code>PreferenceDialog</code> calling
-	 * {@link JDialog#JDialog(Window, boolean)}.
+	 * {@link JDialog#JDialog(Window, ModalityType)}.
 	 * 
 	 * @param parent
 	 *            the <code>Window</code> from which the dialog is displayed or
 	 *            <code>null</code> if this dialog has no owner
-	 * @param conf
-	 *            the configuration
 	 * @param preferences
 	 *            the root preference nodes
 	 */
@@ -137,16 +135,14 @@ public class PreferenceDialog extends JDialog {
 		initializeDialog();
 	}
 
-	/**
-	 * Initializes the User Interface (UI) for this dialog. A left panel
-	 * contains a tree hierarchy; when the user selects a node the
-	 * {@link #editTable} displays the preferences for that node.
-	 */
+	/** Initializes the User Interface (UI) for this dialog. */
 	protected void initializeDialog() {
 		try {
-			setIconImage(ImageIO.read(PreferenceDialog.class.getClassLoader()
-					.getResourceAsStream(
-							"usr/erichschroeter/jpreferences/png/preferences.png")));
+			setIconImage(ImageIO
+					.read(PreferenceDialog.class
+							.getClassLoader()
+							.getResourceAsStream(
+									"usr/erichschroeter/jpreferences/png/preferences.png")));
 		} catch (IOException e) {
 			// let system use default image
 		}
@@ -366,8 +362,6 @@ public class PreferenceDialog extends JDialog {
 
 	/**
 	 * Removes the specified preference page from the preference dialog.
-	 * 
-	 * @TODO handle falling back to last selected node
 	 * 
 	 * @param page
 	 *            the preference page
