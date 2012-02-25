@@ -3,15 +3,19 @@
 *.class
 *.classpath
 *.project
+*.swp
 
 # Directories
 ####################
 classes/
 bin/
+build/
 tmp/
 junit/
 jar/
 javadoc/
+.gradle/
+.settings/
 
 # OS generated files
 #####################
@@ -19,7 +23,3 @@ javadoc/
 ehthumbs.db
 Icon?
 Thumbs.db
-
-# Other
-#####################
-.gitignore

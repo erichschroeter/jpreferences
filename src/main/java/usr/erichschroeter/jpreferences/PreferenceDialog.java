@@ -144,11 +144,9 @@ public class PreferenceDialog extends JDialog {
 	 */
 	protected void initializeDialog() {
 		try {
-			setIconImage(ImageIO
-					.read(PreferenceDialog.class
-							.getClassLoader()
-							.getResourceAsStream(
-									"usr/erichschroeter/jpreferences/res/preferences.png")));
+			setIconImage(ImageIO.read(PreferenceDialog.class.getClassLoader()
+					.getResourceAsStream(
+							"usr/erichschroeter/jpreferences/preferences.png")));
 		} catch (IOException e) {
 			// let system use default image
 		}

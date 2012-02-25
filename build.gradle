@@ -1,0 +1,32 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+
+group = 'usr.erichschroeter'
+version = '0.0.1'
+description = 'A library for interacting with Java preferences'
+
+sourceCompatibility = 1.6
+
+repositories { mavenCentral() }
+
+dependencies {
+	testCompile group: 'junit', name: 'junit', version: '4.10'
+}
+
+task sourceJar(type: Jar) {
+	from sourceSets.main.java
+	from sourceSets.main.resources
+	classifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+	dependsOn javadoc
+	from javadoc.destinationDir
+	classifier = 'javadoc'
+}
+
+artifacts {
+	archives sourceJar
+	archives javadocJar
+}

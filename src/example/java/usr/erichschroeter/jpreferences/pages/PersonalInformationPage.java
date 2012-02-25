@@ -1,4 +1,4 @@
-package example.jpreferences.pages;
+package usr.erichschroeter.jpreferences.pages;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
